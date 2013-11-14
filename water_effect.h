@@ -1,11 +1,14 @@
+//uses the fbo-ping-pong technique to switch between two height textures quicky
+//simulates an approximation of water waves by sampling neighbooring pixels from height textures
+//renders an approximation of water waves displacing the background using the diffrence in height.
 #pragma once
 
 namespace water_effect
 {
 	GLuint height0_texture, height1_texture;
-	GLuint ripple_wave_update, ripple_wave_rendering, ripple_wave_mouse, ripple_wave_player;
-	GLuint ripple_frame_buffer;
-	GLuint background_texture, player_texture, reflection_texture;
+	GLuint water_effect_update, water_effect_rendering, water_effect_mouse;
+	GLuint water_effect_frame_buffer;
+	GLuint background_texture;
 	int water_width = 1280;
 	int water_height = 720;
 	bool ping_pong = false;
@@ -44,18 +47,18 @@ namespace water_effect
 		height0_texture = construct_color_texture();
 		height1_texture = construct_color_texture();
 
-		ripple_wave_rendering = CreateShaderProgram("bpl_source/water_effect_rendering.vert", "bpl_source/water_effect_rendering.frag");
-		glUseProgram(ripple_wave_rendering);
-		glUniform1i(glGetUniformLocation(ripple_wave_rendering, "background_sampler"), 0);
-		glUniform1i(glGetUniformLocation(ripple_wave_rendering, "height_sampler"), 1);
+		water_effect_rendering = CreateShaderProgram("bpl_source/water_effect_rendering.vert", "bpl_source/water_effect_rendering.frag");
+		glUseProgram(water_effect_rendering);
+		glUniform1i(glGetUniformLocation(water_effect_rendering, "background_sampler"), 0);
+		glUniform1i(glGetUniformLocation(water_effect_rendering, "height_sampler"), 1);
 		glUseProgram(0);
 
-		ripple_wave_mouse = CreateShaderProgram("bpl_source/water_effect_mouse.vert", "bpl_source/water_effect_mouse.frag");
+		water_effect_mouse = CreateShaderProgram("bpl_source/water_effect_mouse.glsl", "bpl_source/water_effect_mouse.glsl");
 
-		ripple_wave_update = CreateShaderProgram("bpl_source/water_effect_update.vert", "bpl_source/water_effect_update.frag");
-		glUseProgram(ripple_wave_update);
-		glUniform1i(glGetUniformLocation(ripple_wave_update, "height0_sampler"), 0);
-		glUniform1i(glGetUniformLocation(ripple_wave_update, "height1_sampler"), 1);
+		water_effect_update = CreateShaderProgram("bpl_source/water_effect_update.vert", "bpl_source/water_effect_update.frag");
+		glUseProgram(water_effect_update);
+		glUniform1i(glGetUniformLocation(water_effect_update, "height0_sampler"), 0);
+		glUniform1i(glGetUniformLocation(water_effect_update, "height1_sampler"), 1);
 		glUseProgram(0);
 		
 		background_texture = LoadImageToTexture("bpl_binary/Colorful-Sky-Desktop-Background.jpg");
@@ -88,13 +91,13 @@ namespace water_effect
 				throw "error glCheckFramebufferStatus";
 
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			ripple_frame_buffer = generated_frame_buffer;
+			water_effect_frame_buffer = generated_frame_buffer;
 		}
 	}
 
 	void draw()
 	{
-		glUseProgram(ripple_wave_rendering);
+		glUseProgram(water_effect_rendering);
 		glEnable(GL_TEXTURE_2D);
 
 		glActiveTexture(GL_TEXTURE0);
@@ -116,26 +119,12 @@ namespace water_effect
 
 		glDisable(GL_TEXTURE_2D);
 		glUseProgram(0);
-
-		if(0)
-		{
-			glBindFramebuffer(GL_READ_FRAMEBUFFER, ripple_frame_buffer);
-			
-			if(ping_pong)
-				glReadBuffer(GL_COLOR_ATTACHMENT1);
-			else
-				glReadBuffer(GL_COLOR_ATTACHMENT0);
-
-			glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-			glBlitFramebuffer(0, water_height, water_width, 0, 0, 0, water_width, water_height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		}
 	}
 
 	void mouse_interaction(int mx, int my)
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, ripple_frame_buffer);
-		glUseProgram(ripple_wave_mouse);
+		glBindFramebuffer(GL_FRAMEBUFFER, water_effect_frame_buffer);
+		glUseProgram(water_effect_mouse);
 
 		if(ping_pong)
 			glDrawBuffer(GL_COLOR_ATTACHMENT0);
@@ -164,8 +153,8 @@ namespace water_effect
 
 	void update()
 	{
-		glBindFramebuffer(GL_FRAMEBUFFER, ripple_frame_buffer);
-		glUseProgram(ripple_wave_update);
+		glBindFramebuffer(GL_FRAMEBUFFER, water_effect_frame_buffer);
+		glUseProgram(water_effect_update);
 		glEnable(GL_TEXTURE_2D);
 
 		if(ping_pong)
