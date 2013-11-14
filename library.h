@@ -120,3 +120,11 @@ GLuint LoadImageToTexture(const char* image_file_path)
 	SDL_FreeSurface(sdl_surface);
 	return texture_id;
 }
+
+void VerticalSync(bool mode)
+{
+	typedef bool (APIENTRY *PFNWGLSWAPINTERVALFARPROC)(int);
+	PFNWGLSWAPINTERVALFARPROC wglSwapIntervalEXT = 0;
+	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALFARPROC)wglGetProcAddress("wglSwapIntervalEXT");
+	wglSwapIntervalEXT(mode);
+}

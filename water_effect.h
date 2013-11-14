@@ -42,11 +42,19 @@ namespace water_effect
 	void construct()
 	{
 		ripple_wave_rendering = CreateShaderProgram("bpl_source/water_effect_rendering.vert", "bpl_source/water_effect_rendering.frag");
+		glUniform1i(glGetUniformLocation(ripple_wave_rendering, "background_sampler"), 0);
+
+		background_texture = LoadImageToTexture("bpl_binary/transparent.png");
 	}
 
 	void draw()
 	{
 		glUseProgram(ripple_wave_rendering);
+
+		glEnable(GL_TEXTURE_2D);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, background_texture);
 
 		glBegin(GL_TRIANGLE_STRIP);
         glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, -1); //bottom left
@@ -54,6 +62,8 @@ namespace water_effect
         glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, +1); //top left
         glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, +1); //top right
         glEnd();
+
+		glDisable(GL_TEXTURE_2D);
 
 		glUseProgram(0);
 	}

@@ -9,7 +9,6 @@ void program_construct(int argc, char** argv)
 		glutInitWindowSize(window_width, window_height);
 		glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH);
 		glutCreateWindow("BPL");
-		glewInit();
 	}
 
 	//register callbacks
@@ -25,7 +24,16 @@ void program_construct(int argc, char** argv)
 	}
 
 	{
+		glewInit();
+		//IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
+	}
+
+	{
 		water_effect::construct();
+	}
+
+	{
+		//VerticalSync(false);
 	}
 
 	printf("entering main loop\n");
