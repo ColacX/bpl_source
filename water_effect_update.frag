@@ -22,7 +22,7 @@ void main()
 	
 	////tweak the parameters a bit
 	c = a*0.5f - c;
-	c = c * 0.98f;
+	//c = c * 0.98f;
 	c = clamp(c, -0.8, 0.8);
 	frag_color = vec4(c, 0, 0, 1);
 }
