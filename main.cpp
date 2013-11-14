@@ -13,6 +13,13 @@
 #include <GL\glew.h>
 #include <gl\glut.h>
 
+#include <SDL.h>
+#pragma comment(lib, "SDL2.lib")
+#undef main
+
+#include <SDL_image.h>
+#pragma comment(lib, "SDL2_image.lib")
+
 //global switch and macros-------------------------------------------------------
 #define trigger_breakpoint __debugbreak()
 

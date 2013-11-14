@@ -96,3 +96,27 @@ GLenum CreateShaderProgram(const char* vert_source = 0, const char* frag_source 
 	glLinkProgram(program_object);
 	return program_object;
 }
+
+GLuint LoadImageToTexture(const char* image_file_path)
+{
+	SDL_Surface* sdl_surface = IMG_Load(image_file_path);
+	
+	if(sdl_surface == nullptr)
+	{
+		trigger_breakpoint;
+		throw "IMG_Load";
+	}
+
+	GLuint texture_id;
+	glGenTextures(1, &texture_id);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sdl_surface->w, sdl_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+
+	glBindTexture(GL_TEXTURE_2D, 0);
+	SDL_FreeSurface(sdl_surface);
+	return texture_id;
+}
