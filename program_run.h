@@ -5,8 +5,9 @@ void program_run()
 	double start_time = windows_timer_get_time();
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	water_effect::update();
-	water_effect::draw();
+	//water_effect::update();
+	//water_effect::draw();
+	test_ttf_sdl_opengl();
 	glutSwapBuffers();
 
 	double end_time = windows_timer_get_time();

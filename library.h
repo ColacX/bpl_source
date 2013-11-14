@@ -26,7 +26,6 @@ void ReadFile(const char* file_path, char*& buffer_pointer, unsigned int& buffer
 	std::ifstream file(file_path, std::ios::in | std::ios::binary | std::ios::ate);
 
 	if(!file.is_open()){
-		trigger_breakpoint;
 		throw "is_open failed";
 	}
 
@@ -134,3 +133,73 @@ void VerticalSync(bool mode)
 	wglSwapIntervalEXT = (PFNWGLSWAPINTERVALFARPROC)wglGetProcAddress("wglSwapIntervalEXT");
 	wglSwapIntervalEXT(mode);
 }
+
+void test_ttf_sdl_opengl()
+{
+	//http://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html
+
+	TTF_Font* text_font = TTF_OpenFont("bpl_binary/waltographUI.ttf", 50);
+	SDL_Color color = {0xff, 0xff, 0xff, 0xff};
+	SDL_Color background_color = {0xff, 0xff, 0xff, 0x00};
+	SDL_Surface* sdl_surface = TTF_RenderUTF8_Shaded(text_font, "hello world", color, background_color);
+	
+	//GLuint texture_id;
+	//glGenTextures(1, &texture_id);
+	//glBindTexture(GL_TEXTURE_2D, texture_id);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sdl_surface->w, sdl_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	//glBindTexture(GL_TEXTURE_2D, 0);
+	
+
+	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	//FILE* file = fopen("output.txt", "w+");
+
+	//for(int h=0; h<sdl_surface->h; h++)
+	//{
+	//	
+	//	for(int w=0; w<sdl_surface->w; w++)
+	//	{
+	//		unsigned int xxx = ((unsigned int*)sdl_surface->pixels)[h*sdl_surface->w + w];
+	//		/*if(xxx != 0)
+	//			fprintf(file, "x", xxx);
+	//		else
+	//			fprintf(file, " ", xxx);*/
+	//		fprintf(file, "%08x ", xxx);
+	//	}
+	//	fprintf(file, "\n");
+	//}
+
+	//fclose(file);
+
+	//MULTIPLY WITH ALPHA TO ACTUALLY SEE SOMETHING
+
+	//glUseProgram(shader_program_text);
+	//glEnable(GL_TEXTURE_2D);
+
+	//glActiveTexture(GL_TEXTURE0);
+	//glBindTexture(GL_TEXTURE_2D, texture_id);
+
+	//glBegin(GL_TRIANGLE_STRIP);
+	////texcoord; position;
+ //   glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, -1); //top left
+ //   glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, -1); //top right
+ //   glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, +1); //bottom left
+ //   glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, +1); //bottom right
+ //   glEnd();
+
+	//glDisable(GL_TEXTURE_2D);
+	//glUseProgram(0);
+
+	glRasterPos2f(-1, -1);
+	glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	glRasterPos2f(-1, -0.8);
+	glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	glRasterPos2f(-1, -0.6);
+	glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+
+	SDL_FreeSurface(sdl_surface);
+	TTF_CloseFont(text_font);
+} 

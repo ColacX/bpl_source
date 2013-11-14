@@ -36,6 +36,7 @@ void program_construct(int argc, char** argv)
 	//initialize custom program objects
 	{
 		water_effect::construct();
+		shader_program_text = CreateShaderProgram("bpl_source/text_renderer.glsl", "bpl_source/text_renderer.glsl");
 	}
 
 	//special settings

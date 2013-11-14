@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <vector>
 #include <fstream>
+#include <iostream>
 
 #ifdef WIN32
 #include <Windows.h>
@@ -27,9 +28,6 @@
 #define trigger_breakpoint __debugbreak()
 
 //global variables---------------------------------------------------------------
-int window_width = 1280;
-int window_height = 720;
-
 //temporary buffer, use carefully
 #define t_size 1920*720*4*4
 static union
@@ -40,6 +38,10 @@ static union
 	double d[t_size/sizeof(double)];
 	long l[t_size/sizeof(long)];
 } t;
+
+int window_width = 1280;
+int window_height = 720;
+GLuint shader_program_text;
 
 //custom header files------------------------------------------------------------
 #include "library.h"
