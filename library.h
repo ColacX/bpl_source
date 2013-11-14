@@ -1,10 +1,6 @@
 #pragma once
 
-#include <stdio.h>
-
 #ifdef WIN32
-#include <Windows.h>
-
 double windows_timer_get_time()
 {
 	LARGE_INTEGER frequency;

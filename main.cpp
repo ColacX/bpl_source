@@ -1,5 +1,38 @@
-#include "library.h"
+//linker settings and standard librarys-----------------------------------------
+#include <stdio.h>
+#ifdef WIN32
+#include <Windows.h>
+#endif
+#pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "glu32.lib")
+#pragma comment(lib, "glew32.lib")
+#include <GL\glew.h>
+#include <gl\glut.h>
 
-void main()
+//global switch and macros-------------------------------------------------------
+
+//global variables---------------------------------------------------------------
+int window_width = 1280;
+int window_height = 720;
+
+//temporary buffer, use carefully
+#define t_size 1920*720*4*4
+static union
 {
+	unsigned char c[t_size/sizeof(unsigned char)];
+	int i[t_size/sizeof(int)];
+	float f[t_size/sizeof(float)];
+	double d[t_size/sizeof(double)];
+	long l[t_size/sizeof(long)];
+} t;
+
+//custom header files------------------------------------------------------------
+#include "library.h"
+#include "program_run.h"
+#include "program_callbacks.h"
+#include "program_construct.h"
+
+void main(int argc, char** argv)
+{
+	program_construct(argc, argv);
 }
