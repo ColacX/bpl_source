@@ -99,7 +99,7 @@ GLuint CreateShaderProgram(const char* vert_source = 0, const char* frag_source 
 
 GLuint LoadImageToTexture(const char* image_file_path)
 {
-	SDL_Surface* sdl_surface = IMG_Load(image_file_path);
+	SDL_Surface* sdl_surface = IMG_Load(image_file_path); //can throw an odd error if something is wrong with the image
 	
 	if(sdl_surface == nullptr)
 	{
@@ -114,7 +114,13 @@ GLuint LoadImageToTexture(const char* image_file_path)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sdl_surface->w, sdl_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+
+	if(sdl_surface->format->BitsPerPixel == 24)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, sdl_surface->w, sdl_surface->h, 0, GL_RGB, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	else if(sdl_surface->format->BitsPerPixel == 32)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sdl_surface->w, sdl_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	else
+		throw "unsupported BitsPerPixel";
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	SDL_FreeSurface(sdl_surface);

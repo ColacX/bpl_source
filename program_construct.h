@@ -25,7 +25,7 @@ void program_construct(int argc, char** argv)
 
 	{
 		glewInit();
-		//IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
+		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
 	}
 
 	{

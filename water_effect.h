@@ -43,8 +43,9 @@ namespace water_effect
 	{
 		ripple_wave_rendering = CreateShaderProgram("bpl_source/water_effect_rendering.vert", "bpl_source/water_effect_rendering.frag");
 		glUniform1i(glGetUniformLocation(ripple_wave_rendering, "background_sampler"), 0);
-
-		background_texture = LoadImageToTexture("bpl_binary/transparent.png");
+		
+		//background_texture = LoadImageToTexture("bpl_binary/Colorful-Sky-Desktop-Background.jpg");
+		background_texture = LoadImageToTexture("bpl_binary/Colorful-Sky-Desktop-Background.png");
 	}
 
 	void draw()
