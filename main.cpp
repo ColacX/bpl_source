@@ -1,8 +1,12 @@
 //linker settings and standard librarys-----------------------------------------
 #include <stdio.h>
+#include <vector>
+#include <fstream>
+
 #ifdef WIN32
 #include <Windows.h>
 #endif
+
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glu32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -10,6 +14,7 @@
 #include <gl\glut.h>
 
 //global switch and macros-------------------------------------------------------
+#define trigger_breakpoint __debugbreak()
 
 //global variables---------------------------------------------------------------
 int window_width = 1280;
@@ -28,6 +33,7 @@ static union
 
 //custom header files------------------------------------------------------------
 #include "library.h"
+#include "water_effect.h"
 #include "program_run.h"
 #include "program_callbacks.h"
 #include "program_construct.h"
