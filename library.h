@@ -62,9 +62,9 @@ void compile_shader(const char* file_path, std::vector<char*>& source_vector, GL
 	delete[] text_data;
 }
 
-GLenum CreateShaderProgram(const char* vert_source = 0, const char* frag_source = 0, const char* geom_source = 0)
+GLuint CreateShaderProgram(const char* vert_source = 0, const char* frag_source = 0, const char* geom_source = 0)
 {
-	GLenum program_object = glCreateProgram();
+	GLuint program_object = glCreateProgram();
 
 	if(vert_source != 0)
 	{
