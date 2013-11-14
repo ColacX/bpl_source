@@ -23,15 +23,22 @@ void program_construct(int argc, char** argv)
 		glutIdleFunc(idle_function);
 	}
 
+	//initialize standard libraries
 	{
-		glewInit();
-		IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF);
+		if(glewInit() != 0)
+			throw "glewInit";
+		if(IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG | IMG_INIT_TIF) != 7)
+			throw "IMG_Init";
+		if(TTF_Init() == -1)
+			throw "TTF_Init";
 	}
 
+	//initialize custom program objects
 	{
 		water_effect::construct();
 	}
 
+	//special settings
 	{
 		//VerticalSync(false);
 	}

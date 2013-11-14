@@ -20,6 +20,9 @@
 #include <SDL_image.h>
 #pragma comment(lib, "SDL2_image.lib")
 
+#include <SDL_ttf.h>
+#pragma comment(lib, "SDL2_ttf.lib")
+
 //global switch and macros-------------------------------------------------------
 #define trigger_breakpoint __debugbreak()
 
