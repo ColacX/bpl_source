@@ -15,7 +15,9 @@ namespace text_area
 	void construct()
 	{
 		uint16_t default_text[] = {
-			'H', 'e', 'l', 'l', 0xF6, 'Ö', '\n', 'W', 'o', 'r', 'l', 'd', ' ', '1', '2', '3', '4', 'X', 'Y', 'Z', 'x', 'y', 'z'}; //unicode number
+			'H', 'e', 'l', 'l', 0xF6, 'Ö', '\n', 'W', 'o', 'r', 'l', 'd', ' ',
+			'1', '2', '3', '4', 'X', 'Y', 'Z', 'x', 'y', 'z', '\n',
+			'1', '2', '3', '\n', 'A', 'B', 'C', '\n', 'a', 'b', 'c'}; //unicode number
 		
 		for(int ia=0; ia<sizeof(default_text)/sizeof(uint16_t); ia++)
 			text_data.push_back(default_text[ia]);
@@ -25,9 +27,10 @@ namespace text_area
 		rectangle_w = 1000;
 		rectangle_h = 1000;
 
-		text_font = TTF_OpenFont("bpl_binary/arial.ttf", 72);
+		text_font = TTF_OpenFont("bpl_binary/consola.ttf", 72);
 		TTF_SetFontStyle(text_font, TTF_STYLE_STRIKETHROUGH | TTF_STYLE_UNDERLINE | TTF_STYLE_ITALIC);
-		//TTF_SetFontKerning(text_font, 1);
+		TTF_SetFontKerning(text_font, 0); //does not work?
+		TTF_SetFontOutline(text_font, 1);
 	}
 
 	void destruct()
@@ -50,7 +53,10 @@ namespace text_area
 		for(int ia=0; ia < text_data.size(); ia++)
 		{
 			int min_x, max_x, min_y, max_y, advance_x;
-			TTF_GlyphMetrics(text_font, text_data[ia], &min_x, &max_x, &min_y, &max_y, &advance_x);
+			
+			if(TTF_GlyphMetrics(text_font, text_data[ia], &min_x, &max_x, &min_y, &max_y, &advance_x) == -1)
+				throw "TTF_GlyphMetrics";
+			
 			advance_x += 1;
 			word_width += advance_x;
 			printf("d:%d: x:%x c:%c a:%d w:%d\n", text_data[ia], text_data[ia], text_data[ia], advance_x, word_width);
@@ -161,8 +167,8 @@ namespace text_area
 					glDrawPixels(min(rectangle_w, sdl_surface->w), min(rectangle_h, sdl_surface->h), GL_BGRA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
 
 					SDL_FreeSurface(sdl_surface);
-					//letter_start_u += advance_x;
-					letter_start_u += font_glyph_width;
+					letter_start_u += advance_x;
+					//letter_start_u += font_glyph_width;
 				}
 				text_draw_data.clear();
 				line_v += font_line_skip;
