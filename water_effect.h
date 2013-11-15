@@ -23,10 +23,10 @@ namespace water_effect
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //GL_NEAREST, GL_LINEAR
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-		
+
 		GLfloat border_color[4] = {0,0,0,0};
 		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
-		
+
 		glTexImage2D(
 			GL_TEXTURE_2D, //target
 			0, //mipmap-level
@@ -37,7 +37,7 @@ namespace water_effect
 			GL_RED, //input data format
 			GL_FLOAT, //input data element type
 			texture_data //input data
-		); 
+			); 
 		glBindTexture(GL_TEXTURE_2D, 0);
 		return generated_texture;
 	}
@@ -60,7 +60,7 @@ namespace water_effect
 		glUniform1i(glGetUniformLocation(water_effect_update, "height0_sampler"), 0);
 		glUniform1i(glGetUniformLocation(water_effect_update, "height1_sampler"), 1);
 		glUseProgram(0);
-		
+
 		background_texture = LoadImageToTexture("bpl_binary/Colorful-Sky-Desktop-Background.jpg");
 		//background_texture = LoadImageToTexture("bpl_binary/Colorful-Sky-Desktop-Background.png");
 
@@ -69,7 +69,7 @@ namespace water_effect
 			GLuint generated_frame_buffer;
 			glGenFramebuffers(1, &generated_frame_buffer);
 			glBindFramebuffer(GL_FRAMEBUFFER, generated_frame_buffer);
-			
+
 			//Attaching a 2D texture image to FBO
 			glFramebufferTexture2D(
 				GL_FRAMEBUFFER, //GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER, GL_FRAMEBUFFER
@@ -77,7 +77,7 @@ namespace water_effect
 				GL_TEXTURE_2D, //specifies what type of texture is attached
 				height0_texture, //texture id
 				0 //mip map level to attach
-			);
+				);
 
 			glFramebufferTexture2D(
 				GL_FRAMEBUFFER, //GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER, GL_FRAMEBUFFER
@@ -85,8 +85,8 @@ namespace water_effect
 				GL_TEXTURE_2D, //specifies what type of texture is attached
 				height1_texture, //texture id
 				0 //mip map level to attach
-			);
-			
+				);
+
 			if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 				throw "error glCheckFramebufferStatus";
 
@@ -111,11 +111,11 @@ namespace water_effect
 
 		glBegin(GL_TRIANGLE_STRIP);
 		//texcoord; position;
-        glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, -1); //top left
-        glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, -1); //top right
-        glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, +1); //bottom left
-        glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, +1); //bottom right
-        glEnd();
+		glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, -1); //bottom left
+		glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, -1); //bottom right
+		glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, +1); //top left
+		glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, +1); //top right
+		glEnd();
 
 		glDisable(GL_TEXTURE_2D);
 		glUseProgram(0);
@@ -130,7 +130,7 @@ namespace water_effect
 			glDrawBuffer(GL_COLOR_ATTACHMENT0);
 		else
 			glDrawBuffer(GL_COLOR_ATTACHMENT1);
-		
+
 		float s = (float)mx/(float)water_width*2.0f - 1.0f;
 		float t = (float)my/(float)water_height*2.0f - 1.0f;
 
@@ -141,12 +141,12 @@ namespace water_effect
 
 		glBegin(GL_TRIANGLE_STRIP);
 		//color; position;
-        glVertexAttrib4f(1, 1, 0, 0, 0); glVertexAttrib2f(0, s, t); //bottom left
-        glVertexAttrib4f(1, 1, 0, 0, 0); glVertexAttrib2f(0, s+0.1, t); //bottom right
-        glVertexAttrib4f(1, 1, 0, 0, 0); glVertexAttrib2f(0, s, t+0.1); //top left
-        glVertexAttrib4f(1, 1, 0, 0, 0); glVertexAttrib2f(0, s+0.1, t+0.1); //top right
-        glEnd();
-		
+		glVertexAttrib4f(1, 1, 0, 0, 0); glVertexAttrib2f(0, s, t); //bottom left
+		glVertexAttrib4f(1, 1, 0, 0, 0); glVertexAttrib2f(0, s+0.1, t); //bottom right
+		glVertexAttrib4f(1, 1, 0, 0, 0); glVertexAttrib2f(0, s, t+0.1); //top left
+		glVertexAttrib4f(1, 1, 0, 0, 0); glVertexAttrib2f(0, s+0.1, t+0.1); //top right
+		glEnd();
+
 		glUseProgram(0);
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
@@ -163,7 +163,7 @@ namespace water_effect
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, height1_texture);
-		
+
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, height0_texture);
 		}
@@ -173,18 +173,18 @@ namespace water_effect
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, height0_texture);
-			
+
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, height1_texture);
 		}
 
 		glBegin(GL_TRIANGLE_STRIP);
 		//texcoord; position; //upside down texcoords???
-        glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, -1); //top left
-        glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, -1); //top right
-        glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, +1); //bottom left
-        glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, +1); //bottom right
-        glEnd();
+		glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, -1); //bottom left
+		glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, -1); //bottom right
+		glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, +1); //top left
+		glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, +1); //top right
+		glEnd();
 
 		glDisable(GL_TEXTURE_2D);
 		glUseProgram(0);

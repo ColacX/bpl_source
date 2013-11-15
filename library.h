@@ -5,7 +5,7 @@ double windows_timer_get_time()
 {
 	LARGE_INTEGER frequency;
 	QueryPerformanceFrequency(&frequency);
-	
+
 	LARGE_INTEGER performance_count;
 	QueryPerformanceCounter(&performance_count); //get current tick
 	return performance_count.QuadPart * (1000000.0 / frequency.QuadPart); //returns time in micro seconds
@@ -99,7 +99,7 @@ GLuint CreateShaderProgram(const char* vert_source = 0, const char* frag_source 
 GLuint LoadImageToTexture(const char* image_file_path)
 {
 	SDL_Surface* sdl_surface = IMG_Load(image_file_path); //can throw an odd error if something is wrong with the image
-	
+
 	if(sdl_surface == nullptr)
 	{
 		trigger_breakpoint;
@@ -140,19 +140,18 @@ void test_ttf_sdl_opengl()
 
 	TTF_Font* text_font = TTF_OpenFont("bpl_binary/waltographUI.ttf", 50);
 	SDL_Color color = {0xff, 0xff, 0xff, 0xff};
-	SDL_Color background_color = {0xff, 0xff, 0xff, 0x00};
-	SDL_Surface* sdl_surface = TTF_RenderUTF8_Shaded(text_font, "hello world", color, background_color);
-	
-	//GLuint texture_id;
-	//glGenTextures(1, &texture_id);
-	//glBindTexture(GL_TEXTURE_2D, texture_id);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sdl_surface->w, sdl_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
-	//glBindTexture(GL_TEXTURE_2D, 0);
-	
+	SDL_Surface* sdl_surface = TTF_RenderUTF8_Blended(text_font, "hello world", color);
+
+	GLuint texture_id;
+	glGenTextures(1, &texture_id);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sdl_surface->w, sdl_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
 
 	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
 	//FILE* file = fopen("output.txt", "w+");
@@ -176,29 +175,35 @@ void test_ttf_sdl_opengl()
 
 	//MULTIPLY WITH ALPHA TO ACTUALLY SEE SOMETHING
 
-	//glUseProgram(shader_program_text);
-	//glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, texture_id);
+	glUseProgram(shader_program_text);
+	glEnable(GL_TEXTURE_2D);
 
-	//glBegin(GL_TRIANGLE_STRIP);
-	////texcoord; position;
- //   glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, -1); //top left
- //   glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, -1); //top right
- //   glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, +1); //bottom left
- //   glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, +1); //bottom right
- //   glEnd();
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture_id);
 
-	//glDisable(GL_TEXTURE_2D);
-	//glUseProgram(0);
+	glBegin(GL_TRIANGLE_STRIP);
+	//texcoord; position;
+	glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, -1); //bottom left
+	glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, -1); //bottom right
+	glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, +1); //top left
+	glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, +1); //top right
+	glEnd();
 
-	glRasterPos2f(-1, -1);
-	glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
-	glRasterPos2f(-1, -0.8);
-	glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
-	glRasterPos2f(-1, -0.6);
-	glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	glDisable(GL_TEXTURE_2D);
+	glUseProgram(0);
+
+	//glPixelZoom(1.0f, -1.0f);
+	//glRasterPos2f(-1, -1);
+	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	//glRasterPos2f(-1, -0.8);
+	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	//glRasterPos2f(-1, -0.6);
+	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+
+	glDisable(GL_BLEND);
 
 	SDL_FreeSurface(sdl_surface);
 	TTF_CloseFont(text_font);
