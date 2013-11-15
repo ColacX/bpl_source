@@ -36,7 +36,7 @@ void program_construct(int argc, char** argv)
 	//initialize custom program objects
 	{
 		water_effect::construct();
-		
+		text_area::construct();
 	}
 
 	//special settings
