@@ -137,79 +137,100 @@ void VerticalSync(bool mode)
 void test_ttf_sdl_opengl()
 {
 	//http://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html
+	//http://www.libsdl.org/projects/docs/SDL_ttf/SDL_ttf_5.html#SEC5
 
-	TTF_Font* text_font = TTF_OpenFont("bpl_binary/BrushScriptStd.otf", 20);
-	SDL_Color color = {0xff, 0xff, 0xff, 0xff};
-	uint16_t text_data[] = {'H', 'e', 'l', 'l', 0xF6, 'Ö', 0x0A, 'W', 'o', 'r', 'l', 'd', 0x00}; //unicode number
+	TTF_Font* text_font = TTF_OpenFont("bpl_binary/BrushScriptStd.otf", 72);
+	SDL_Color color = {0xff, 0x00, 0x00, 0x00};
+	uint16_t text_data[] = {'H', 'e', 'l', 'l', 0xF6, 'Ö', 0x0A, 'W', 'o', 'r', 'l', 'd', 0x22, 0x32, '+', 0x00}; //unicode number
+
+	int w, h;
+	if(TTF_SizeUNICODE(text_font, text_data, &w,& h))
+		throw "TTF_SizeUNICODE";
+
 	SDL_Surface* sdl_surface = TTF_RenderUNICODE_Blended_Wrapped(
 		text_font, //TTF or OTF text font
 		text_data, //unicode text data utf16
 		color, //text color
-		100 //inverse text width
+		400 //inverse text width? tweak this parameter for diffrent font sizes
 	);
 
-	GLuint texture_id;
-	glGenTextures(1, &texture_id);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sdl_surface->w, sdl_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	//GLuint texture_id;
+	//glGenTextures(1, &texture_id);
+	//glBindTexture(GL_TEXTURE_2D, texture_id);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sdl_surface->w, sdl_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	//glBindTexture(GL_TEXTURE_2D, 0);
 
-	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
-	//FILE* file = fopen("output.txt", "w+");
+	if(0)
+	{
+		FILE* file = fopen("output.txt", "w+");
 
-	//for(int h=0; h<sdl_surface->h; h++)
-	//{
-	//	
-	//	for(int w=0; w<sdl_surface->w; w++)
-	//	{
-	//		unsigned int xxx = ((unsigned int*)sdl_surface->pixels)[h*sdl_surface->w + w];
-	//		/*if(xxx != 0)
-	//			fprintf(file, "x", xxx);
-	//		else
-	//			fprintf(file, " ", xxx);*/
-	//		fprintf(file, "%08x ", xxx);
-	//	}
-	//	fprintf(file, "\n");
-	//}
+		for(int h=0; h<sdl_surface->h; h++)
+		{
+		
+			for(int w=0; w<sdl_surface->w; w++)
+			{
+				unsigned int xxx = ((unsigned int*)sdl_surface->pixels)[h*sdl_surface->w + w];
+				/*if(xxx != 0)
+					fprintf(file, "x", xxx);
+				else
+					fprintf(file, " ", xxx);*/
+				fprintf(file, "%08x ", xxx);
+			}
+			fprintf(file, "\n");
+		}
 
-	//fclose(file);
+		fclose(file);
+	}
 
 	//MULTIPLY WITH ALPHA TO ACTUALLY SEE SOMETHING
 
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	
+	//{
+	//	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//	glUseProgram(shader_program_text);
+	//	glEnable(GL_TEXTURE_2D);
 
-	glUseProgram(shader_program_text);
-	glEnable(GL_TEXTURE_2D);
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glBindTexture(GL_TEXTURE_2D, texture_id);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texture_id);
+	//	glBegin(GL_TRIANGLE_STRIP);
+	//	//texcoord; position;
+	//	glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, -1); //bottom left
+	//	glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, -1); //bottom right
+	//	glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, +1); //top left
+	//	glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, +1); //top right
+	//	glEnd();
 
-	glBegin(GL_TRIANGLE_STRIP);
-	//texcoord; position;
-	glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, -1); //bottom left
-	glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, -1); //bottom right
-	glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, +1); //top left
-	glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, +1); //top right
-	glEnd();
+	//	glDisable(GL_TEXTURE_2D);
+	//	glUseProgram(0);
+	//}
 
-	glDisable(GL_TEXTURE_2D);
-	glUseProgram(0);
-
-	//glPixelZoom(1.0f, -1.0f);
-	//glRasterPos2f(-1, -1);
-	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
-	//glRasterPos2f(-1, -0.8);
-	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
-	//glRasterPos2f(-1, -0.6);
-	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	{
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glPixelZoom(1.0f, -1.0f);
+		glRasterPos2f(-1.f, -0.5f);
+		glDrawPixels(sdl_surface->w, sdl_surface->h, GL_BGRA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+		glRasterPos2f(-1.f, +0.5f);
+		glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+	}
 
 	glDisable(GL_BLEND);
 
 	SDL_FreeSurface(sdl_surface);
 	TTF_CloseFont(text_font);
-} 
+}
+
+void test_gl_draw_pixels()
+{
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	for(int ia=0; ia<1024*1024; ia++)
+	{
+		t.c[ia] = rand();
+	}
+	glDrawPixels(1024, 1024, GL_RGBA, GL_UNSIGNED_BYTE, t.c);
+}

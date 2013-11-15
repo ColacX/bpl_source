@@ -117,6 +117,12 @@ namespace water_effect
 		glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, +1); //top right
 		glEnd();
 
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		
 		glDisable(GL_TEXTURE_2D);
 		glUseProgram(0);
 	}
@@ -185,6 +191,12 @@ namespace water_effect
 		glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, +1); //top left
 		glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, +1); //top right
 		glEnd();
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, 0);
 
 		glDisable(GL_TEXTURE_2D);
 		glUseProgram(0);

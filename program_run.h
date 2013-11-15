@@ -8,6 +8,7 @@ void program_run()
 	water_effect::update();
 	water_effect::draw();
 	test_ttf_sdl_opengl();
+	//test_gl_draw_pixels();
 	glutSwapBuffers();
 
 	double end_time = windows_timer_get_time();

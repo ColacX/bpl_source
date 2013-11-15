@@ -42,6 +42,7 @@ void program_construct(int argc, char** argv)
 	//special settings
 	{
 		//VerticalSync(false);
+		srand(1337);
 	}
 
 	printf("entering main loop\n");
