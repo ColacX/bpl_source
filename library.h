@@ -242,6 +242,9 @@ void test_ttf_sdl_opengl()
 
 		glWindowPos2f(-100, 800);
 		glDrawPixels(sdl_surface->w, sdl_surface->h, GL_BGRA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+
+		glWindowPos2f(0, 100);
+		glDrawPixels(sdl_surface->w, sdl_surface->h, GL_BGRA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
 	}
 
 	glDisable(GL_BLEND);
