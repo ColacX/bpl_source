@@ -45,6 +45,7 @@ GLuint shader_program_text;
 
 //custom header files------------------------------------------------------------
 #include "library.h"
+#include "text_area.h"
 #include "water_effect.h"
 #include "program_run.h"
 #include "program_callbacks.h"
