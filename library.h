@@ -141,7 +141,12 @@ void test_ttf_sdl_opengl()
 	TTF_Font* text_font = TTF_OpenFont("bpl_binary/BrushScriptStd.otf", 20);
 	SDL_Color color = {0xff, 0xff, 0xff, 0xff};
 	uint16_t text_data[] = {'H', 'e', 'l', 'l', 0xF6, 'Ö', 0x0A, 'W', 'o', 'r', 'l', 'd', 0x00}; //unicode number
-	SDL_Surface* sdl_surface = TTF_RenderUNICODE_Blended_Wrapped(text_font, text_data, color, 100);
+	SDL_Surface* sdl_surface = TTF_RenderUNICODE_Blended_Wrapped(
+		text_font, //TTF or OTF text font
+		text_data, //unicode text data utf16
+		color, //text color
+		100 //inverse text width
+	);
 
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
