@@ -12,10 +12,12 @@ void window_reshape_function(int width, int height)
 
 void keyboard_function(unsigned char key, int x, int y)
 {
+	text_area::keyboard_function(key, x, y);
 }
 
 void keyboard_special_function(int key, int x, int y)
 {
+	text_area::keyboard_special_function(key, x, y);
 }
 
 void mouse_function(int button, int state, int x, int y)

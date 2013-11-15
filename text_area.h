@@ -5,9 +5,9 @@
 
 #pragma once
 
-namespace text_area //todo change name to text_view
+namespace text_area
 {
-	uint16_t* text_data;
+	std::vector<uint16_t> text_data;
 	TTF_Font* text_font;
 	float rectangle_u, rectangle_v, rectangle_w, rectangle_h;
 	SDL_Color rgba_color = {0xff, 0x00, 0x00, 0x00};
@@ -15,10 +15,10 @@ namespace text_area //todo change name to text_view
 	void construct()
 	{
 		uint16_t default_text[] = {
-			'H', 'e', 'l', 'l', 0xF6, 'Ö', '\n', 'W', 'o', 'r', 'l', 'd', ' ', '1', '2', '3', '4', 'X', 'Y', 'Z', 'x', 'y', 'z', 0x00}; //unicode number
-		text_data = new uint16_t[sizeof(default_text)/sizeof(uint16_t)];
+			'H', 'e', 'l', 'l', 0xF6, 'Ö', '\n', 'W', 'o', 'r', 'l', 'd', ' ', '1', '2', '3', '4', 'X', 'Y', 'Z', 'x', 'y', 'z'}; //unicode number
+		
 		for(int ia=0; ia<sizeof(default_text)/sizeof(uint16_t); ia++)
-			text_data[ia] = default_text[ia];
+			text_data.push_back(default_text[ia]);
 
 		rectangle_u = 100;
 		rectangle_v = 0;
@@ -37,48 +37,55 @@ namespace text_area //todo change name to text_view
 	//figures out how to word wraps the text
 	//draws only text that will be visible within the viewing rectangle
 	//since this call is expensive a tip is to draw it to a FBO, only when text is modified, generate a texture and use it instead
-	void draw(uint16_t* text_data, TTF_Font* text_font, float rectangle_u, float rectangle_v, float rectangle_w, float rectangle_h)
+	void draw(const std::vector<uint16_t>& text_data, TTF_Font* text_font, float rectangle_u, float rectangle_v, float rectangle_w, float rectangle_h)
 	{
-		uint16_t text_draw_data[1024];
+		if(text_data.empty())
+			return;
+
+		std::vector<uint16_t> text_draw_data;
 		int word_start = 0;
 		int word_width = 0;
 		int draw_index = 0;
 
-		//printf("--------------------------\n");
-		for(int ia=0; ia < sizeof(text_draw_data)/sizeof(uint16_t); ia++)
+		printf("--------------------------\n");
+		for(int ia=0; ia < text_data.size(); ia++)
 		{
-			//printf("d:%d: x:%x c:%c\n", text_data[ia], text_data[ia], text_data[ia]);
 			int min_x, max_x, min_y, max_y, advance_x;
 			TTF_GlyphMetrics(text_font, text_data[ia], &min_x, &max_x, &min_y, &max_y, &advance_x);
+			advance_x += 1;
 			word_width += advance_x;
+			printf("d:%d: x:%x c:%c a:%d w:%d\n", text_data[ia], text_data[ia], text_data[ia], advance_x, word_width);
 
 			if(text_data[ia] == ' ' || text_data[ia] == '\n')
 			{
-				text_draw_data[draw_index++] = text_data[ia];
+				text_draw_data.push_back(text_data[ia]);
 				word_width = 0;
 			}
 			else if(text_data[ia] == 0x00)
 			{
-				text_draw_data[draw_index++] = 0;
+				text_draw_data.push_back(0);
 				break;
 			}
 			else if(word_width >= rectangle_w)
 			{
 				//the word is too wide, split it into multiple rows
-				text_draw_data[draw_index++] = '\n';
-				text_draw_data[draw_index++] = text_data[ia];
-				word_width = 0;
+				text_draw_data.push_back('\n');
+				text_draw_data.push_back(text_data[ia]);
+				word_width = advance_x;
 				continue;
 			}
 			else
 			{
-				text_draw_data[draw_index++] = text_data[ia];
+				//copy all other letters
+				text_draw_data.push_back(text_data[ia]);
 			}
 		}
 
+		text_draw_data.push_back(0x00);
+
 		SDL_Surface* sdl_surface = TTF_RenderUNICODE_Blended_Wrapped(
 			text_font, //TTF or OTF text font
-			text_draw_data, //unicode text data utf16
+			(uint16_t*)(&text_draw_data[0]), //unicode text data utf16
 			rgba_color, //text rgba_color
 			rectangle_w //width in pixels in window space coordinates, if text drawn exceedes the width it will wrap around weirdly
 		);
@@ -116,7 +123,18 @@ namespace text_area //todo change name to text_view
 		draw(text_data, text_font, rectangle_u, rectangle_v, rectangle_w, rectangle_h);
 	}
 
-	void keyboard_function()
+	void keyboard_function(unsigned char key, int x, int y)
+	{
+		if(key == VK_BACK)
+		{
+			if(!text_data.empty())
+				text_data.pop_back();
+		}
+		else
+			text_data.push_back(key);
+	}
+
+	void keyboard_special_function(int key, int x, int y)
 	{
 
 	}
