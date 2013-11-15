@@ -140,7 +140,7 @@ void test_ttf_sdl_opengl()
 	//http://www.libsdl.org/projects/docs/SDL_ttf/SDL_ttf_5.html#SEC5
 
 	TTF_Font* text_font = TTF_OpenFont("bpl_binary/BrushScriptStd.otf", 72);
-	SDL_Color color = {0xff, 0x00, 0x00, 0x00};
+	SDL_Color rgba_color = {0xff, 0x00, 0x00, 0x00};
 	uint16_t text_data[] = {'H', 'e', 'l', 'l', 0xF6, 'Ö', 0x0A, 'W', 'o', 'r', 'l', 'd', 0x22, 0x32, '+', 0x00}; //unicode number
 
 	int w, h;
@@ -150,7 +150,7 @@ void test_ttf_sdl_opengl()
 	SDL_Surface* sdl_surface = TTF_RenderUNICODE_Blended_Wrapped(
 		text_font, //TTF or OTF text font
 		text_data, //unicode text data utf16
-		color, //text color
+		rgba_color, //text rgba_color
 		400 //inverse text width? tweak this parameter for diffrent font sizes
 	);
 
@@ -210,13 +210,38 @@ void test_ttf_sdl_opengl()
 	//	glUseProgram(0);
 	//}
 
+	//http://www.opengl.org/archives/resources/features/KilgardTechniques/oglpitfall/
+	//9. Careful Updating that Raster Position
+	//http://www.alpcentauri.info/bitmaps_examples.html
 	{
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glPixelZoom(1.0f, -1.0f);
+		//glRasterPos2f(-1.f, -0.5f);
+		//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_BGRA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+		//glRasterPos2f(+0.9f, +0.5f);
+		
+		////???
+		//glRasterPos2i(0, 0);
+		//glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+		//glBitmap(sdl_surface->w, sdl_surface->h, 0, 0, 0, 0, (GLubyte*)sdl_surface->pixels);
+		glMatrixMode(GL_PROJECTION);
+		glLoadIdentity();
+
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+
+		glMatrixMode(GL_COLOR);
+		glLoadIdentity();
+
 		glPixelZoom(1.0f, -1.0f);
-		glRasterPos2f(-1.f, -0.5f);
+		glWindowPos2f(0, 400);
 		glDrawPixels(sdl_surface->w, sdl_surface->h, GL_BGRA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
-		glRasterPos2f(-1.f, +0.5f);
-		glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
+
+		glWindowPos2f(-100, 800);
+		glDrawPixels(sdl_surface->w, sdl_surface->h, GL_BGRA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
 	}
 
 	glDisable(GL_BLEND);
