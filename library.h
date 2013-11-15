@@ -138,10 +138,10 @@ void test_ttf_sdl_opengl()
 {
 	//http://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html
 
-	TTF_Font* text_font = TTF_OpenFont("bpl_binary/BrushScriptStd.otf", 50);
+	TTF_Font* text_font = TTF_OpenFont("bpl_binary/BrushScriptStd.otf", 20);
 	SDL_Color color = {0xff, 0xff, 0xff, 0xff};
-	uint16_t text_data[] = {'H', 'e', 0xF6, 'Ö', 0x00}; //unicode number
-	SDL_Surface* sdl_surface = TTF_RenderUNICODE_Blended(text_font, text_data, color);
+	uint16_t text_data[] = {'H', 'e', 'l', 'l', 0xF6, 'Ö', 0x0A, 'W', 'o', 'r', 'l', 'd', 0x00}; //unicode number
+	SDL_Surface* sdl_surface = TTF_RenderUNICODE_Blended_Wrapped(text_font, text_data, color, 100);
 
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
@@ -152,7 +152,6 @@ void test_ttf_sdl_opengl()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, sdl_surface->w, sdl_surface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
 	glBindTexture(GL_TEXTURE_2D, 0);
-
 
 	//glDrawPixels(sdl_surface->w, sdl_surface->h, GL_RGBA, GL_UNSIGNED_BYTE, sdl_surface->pixels);
 	//FILE* file = fopen("output.txt", "w+");
