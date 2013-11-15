@@ -5,3 +5,5 @@ bpl_binary, we'll put all binary our files here. we'll sync them with dropbox an
 
 Windows Console Command to make symbolic links (short cuts that are transparent for programs)
 mklink /D bpl_binary "D:\Dropbox\bpl_binary"
+
+found lots of font in "C:\Windows\Fonts"

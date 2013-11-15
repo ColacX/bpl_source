@@ -138,9 +138,10 @@ void test_ttf_sdl_opengl()
 {
 	//http://www.libsdl.org/projects/SDL_ttf/docs/SDL_ttf_42.html
 
-	TTF_Font* text_font = TTF_OpenFont("bpl_binary/waltographUI.ttf", 50);
+	TTF_Font* text_font = TTF_OpenFont("bpl_binary/BrushScriptStd.otf", 50);
 	SDL_Color color = {0xff, 0xff, 0xff, 0xff};
-	SDL_Surface* sdl_surface = TTF_RenderUTF8_Blended(text_font, "hello world", color);
+	uint16_t text_data[] = {'H', 'e', 0xF6, 'Ö', 0x00}; //unicode number
+	SDL_Surface* sdl_surface = TTF_RenderUNICODE_Blended(text_font, text_data, color);
 
 	GLuint texture_id;
 	glGenTextures(1, &texture_id);
