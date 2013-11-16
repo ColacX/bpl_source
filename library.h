@@ -178,7 +178,8 @@ void test_ttf_sdl_opengl()
 
 	if(0)
 	{
-		FILE* file = fopen("output.txt", "w+");
+		FILE* file;
+		fopen_s(&file, "output.txt", "w+");
 
 		for(int h=0; h<sdl_surface->h; h++)
 		{

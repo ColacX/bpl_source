@@ -1,5 +1,5 @@
-#ifdef __VERT__
 #version 330
+#ifdef __VERT__
 layout(location = 0) in vec2 position;
 layout(location = 1) in vec4 color;
 out vec4 c;
@@ -12,7 +12,6 @@ void main()
 #endif
 
 #ifdef __FRAG__
-#version 330
 uniform sampler2D sampler0;
 
 in vec4 c;
