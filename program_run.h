@@ -8,6 +8,7 @@ void program_run()
 	water_effect::update();
 	water_effect::draw();
 	text_area::draw();
+	blockTypes::draw();
 	glutSwapBuffers();
 
 	double end_time = windows_timer_get_time();

@@ -27,10 +27,13 @@ namespace text_area
 		rectangle_w = 1000;
 		rectangle_h = 1000;
 
-		text_font = TTF_OpenFont("bpl_binary/consola.ttf", 72);
-		TTF_SetFontStyle(text_font, TTF_STYLE_STRIKETHROUGH | TTF_STYLE_UNDERLINE | TTF_STYLE_ITALIC);
-		TTF_SetFontKerning(text_font, 0); //does not work?
-		TTF_SetFontOutline(text_font, 1);
+		text_font = TTF_OpenFont("bpl_binary/consola.ttf", 18);
+		//TTF_SetFontStyle(text_font, TTF_STYLE_STRIKETHROUGH | TTF_STYLE_UNDERLINE | TTF_STYLE_ITALIC);
+		//TTF_SetFontKerning(text_font, 0); //does not work?
+		//TTF_SetFontOutline(text_font, 1);
+		
+		void bolls_init_font_char_size();
+		bolls_init_font_char_size();
 	}
 
 	void destruct()
@@ -212,3 +215,22 @@ namespace text_area
 
 	}
 };
+
+float font_char_width;
+float font_char_height;
+void bolls_init_font_char_size(){
+	using namespace text_area;
+	int min_x, max_x, min_y, max_y, advance_x;
+	TTF_GlyphMetrics(text_font, 'Q', &min_x, &max_x, &min_y, &max_y, &advance_x);
+	font_char_width = advance_x;
+	font_char_height = TTF_FontLineSkip(text_font);
+}
+
+void bolls_draw_text(const std::string& text, float x, float y){
+	using namespace text_area;
+
+	std::vector<uint16_t> text_data;
+	for(size_t i = 0; i<text.size(); ++i)
+		text_data.push_back(text[i]);
+	draw_unwrapped(text_data, text_font, rectangle_u+x, rectangle_v+y, rectangle_w+x, rectangle_h+y);
+}

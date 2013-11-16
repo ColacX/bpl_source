@@ -47,6 +47,7 @@ GLuint shader_program_text;
 #include "library.h"
 #include "text_area.h"
 #include "water_effect.h"
+#include "BlockTypes.h"
 #include "program_run.h"
 #include "program_callbacks.h"
 #include "program_construct.h"
