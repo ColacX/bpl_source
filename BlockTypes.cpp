@@ -5,14 +5,15 @@ extern float font_char_width;
 extern float font_char_height;
 
 
-Function* f = NULL;
 
 namespace blockTypes{
-	void draw(){
-		if(f==NULL)
-			f = new Function();
-		f->draw(0,0);
-	}
+
+Function* f = NULL;
+
+void draw(){
+	if(f==NULL)
+		f = new Function();
+	f->draw(500,100);
 }
 
 
@@ -713,4 +714,7 @@ void While::saveAsText(std::string& str){
 
 	TextLine("}").saveAsText(str);
 	TextLine("\n").saveAsText(str);
+}
+
+
 }

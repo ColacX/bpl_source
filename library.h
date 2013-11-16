@@ -1,6 +1,18 @@
 #pragma once
 
 #ifdef WIN32
+
+// I'm sorry, I was bored... but it's quite cool ;D /Sebastian
+//
+// How to use:
+// 	Timer(T, printf("time: %f,    fps: %f\n", T, 1000000.0 / T))
+//	{
+//		do_some_heavy_calculations(x,y,z);
+//	}
+
+#define Timer(X, ...) for(double __time_var=0.0, start_time=windows_timer_get_time(), end_time; !__time_var; ++__time_var, end_time=windows_timer_get_time(), [&](double X){__VA_ARGS__;}(end_time - start_time))
+
+
 double windows_timer_get_time()
 {
 	LARGE_INTEGER frequency;

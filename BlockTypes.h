@@ -5,8 +5,8 @@
 #include <algorithm>
 
 namespace blockTypes{
-	void draw();
-}
+
+void draw();
 
 // "Can Be"-interfaces
 struct IsBlock{
@@ -40,6 +40,41 @@ struct CanBeInClassBody : virtual IsBlock{
 struct NeedSemiColonIfInsideBody{
 	virtual ~NeedSemiColonIfInsideBody();
 };
+
+/*
+struct Iterator{
+	struct StackElement{
+		IsBlock* block;
+		unsigned short metatype;
+		unsigned short metadata;
+		StackElement(IsBlock* block, unsigned short metatype, unsigned short metadata)
+		:	block(block), metatype(metatype), metadata(metadata){
+		}
+	};
+
+	std::vector<StackElement> stack;
+
+	Iterator(IsBlock* startBlock){
+		stack.push_back(StackElement(startBlock,0,0));
+	}
+
+	Iterator& operator++(){
+		while(stack.size()){
+			StackElement se = stack.back().block->getNext();
+			if(se.block){
+				stack.push_back(se);
+				return *this;
+			}
+			else
+				stack.pop_back();
+		}
+		return *this;
+	}
+
+	IsBlock& operator*(){
+		return *stack.back().block;
+	}
+};*/
 
 
 struct TextLine : virtual IsBlock{
@@ -194,3 +229,5 @@ struct While : virtual IsBlock, CanBeInFunctionBody{
 };
 
 
+
+}
