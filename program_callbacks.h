@@ -22,7 +22,8 @@ void keyboard_special_function(int key, int x, int y)
 
 void mouse_function(int button, int state, int x, int y)
 {
-	water_effect::mouse_interaction(x, y);
+	//water_effect::mouse_interaction(x, y);
+	particle_system::addSource(x, y);
 }
 
 void mouse_motion_function(int x, int y)
