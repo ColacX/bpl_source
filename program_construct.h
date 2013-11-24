@@ -38,6 +38,7 @@ void program_construct(int argc, char** argv)
 		water_effect::construct();
 		text_area::construct();
 		particle_system::construct();
+		blockTypes::construct();
 	}
 
 	//special settings

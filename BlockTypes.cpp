@@ -1,720 +1,254 @@
+#define WIN32_LEAN_AND_MEAN
 #include "BlockTypes.h"
+#include <Windows.h>
+#include <gl\glew.h>
+#include <gl\glut.h>
+#include <gl\gl.h>
 
-void bolls_draw_text(const std::string& text, float x, float y);
+#define GLUT_KEY_BACKSPACE  8
+#define GLUT_KEY_ENTER     13
+#define GLUT_KEY_ESC       27
+#define GLUT_KEY_SPACE     32
+#define GLUT_KEY_COMMA     44
+#define GLUT_KEY_HYPHEN    45
+#define GLUT_KEY_DOT       46
+#define GLUT_KEY_DELETE   127
+
+void bolls_draw_text(const std::string& text, float x, float y, const SDL_Color& color);
 extern float font_char_width;
 extern float font_char_height;
 
 
 
 namespace blockTypes{
-
-Function* f = NULL;
-
-void draw(){
-	if(f==NULL)
-		f = new Function();
-	f->draw(500,100);
-}
-
-
-
-IsBlock::~IsBlock(){}
-bool IsBlock::isInsideMeTest(float x, float y) const{
-	return x > cachedPosX && x < cachedPosX + cachedWidth && y > cachedPosY && y < cachedPosY + cachedHeight;
-}
-
-float IsBlock::width() const{
-	return cachedWidth;
-}
-float IsBlock::height() const{
-	return cachedHeight;
-}
-
-
-
-// "Can Be"-interfaces
-CanBeInExpression::~CanBeInExpression(){}
-CanBeInOperator::~CanBeInOperator(){}
-CanBeInFunctionBody::~CanBeInFunctionBody(){}
-CanBeInClassBody::~CanBeInClassBody(){}
-
-// "Needs"-interfaces
-NeedSemiColonIfInsideBody::~NeedSemiColonIfInsideBody(){}
-
+	
+SDL_Color red   = {0xff, 0x00, 0x00, 0x00};
+SDL_Color green = {0x00, 0xff, 0x00, 0x00};
+SDL_Color blue  = {0x00, 0x00, 0xff, 0x00};
+SDL_Color cyan  = {0x00, 0xff, 0xff, 0x00};
 
 
 
 TextLine::TextLine(){
-	recalculateCache(0,0);
 }
 TextLine::TextLine(const std::string& str):str(str){
-	recalculateCache(0,0);
 }
 TextLine::TextLine(int i){
 	char temp[16];
 	sprintf_s(temp,16,"%i",i);
 	str.assign(temp);
-	recalculateCache(0,0);
 }
 TextLine::TextLine(char c){
 	str.push_back(c);
-	recalculateCache(0,0);
 }
 
-void TextLine::recalculateCache(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	cachedWidth  = font_char_width * str.length();
-	cachedHeight = font_char_height;
-}
-void TextLine::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
+void TextLine::draw(float x, float y, const SDL_Color& color){
+	//bolls_draw_text(str, x,y, color);
+
+	SDL_Color c = color;
+
+	char t[128];
+	for(size_t i=0; i<str.size(); ++i){
+		// Interpret the text, find out if there are any keywords etc, and set the correct color
+		t[0] = str[i];
+		t[1] = '\0';
+
+		if( (t[0]>='a'&&t[0]<='z') || (t[0]>='A'&&t[0]<='Z'))
+			c = red;
+		else
+			c = blue;
+
+		bolls_draw_text(t, x + i*font_char_width, y, c);
 	}
-}
-
-void TextLine::draw(float x, float y){
-	//drawText(x,y,str);
-	bolls_draw_text(str,x,y);
 }
 void TextLine::saveAsText(std::string& str){
 	str.append(this->str);
 }
 
 
+struct TextArea{
+	std::vector< TextLine > strings;
 
+	float x;
+	float y;
 
-Comment::Comment(){
-	comment = new TextLine("Comment?");
-	recalculateCache(0,0);
-}
-void Comment::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
+	int c, r;
 
-	cachedWidth  = comment->width();
-	cachedHeight = comment->height();
-}
-void Comment::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		comment->isInside(x,y,blockStack);
+	float width(){
+		struct{ bool operator()(const TextLine& a, const TextLine& b){ return a.str.size() < b.str.size(); } } comparator;
+		float maximum = std::max_element(strings.begin(), strings.end(), comparator)->str.length() * font_char_width;
+		return max(maximum, font_char_width); // minimum textarea width is one char
 	}
-}
-void Comment::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	TextLine("// ").draw(x,y);
-	comment->draw(x + TextLine("// ").width() ,y);
-}
-void Comment::saveAsText(std::string& str){
-	str.append("/*");
-	comment->saveAsText(str);
-	str.append("*/");
-}
-
-
-
-Integer::Integer(){
-	i = new TextLine(0);
-	recalculateCache(0,0);
-}
-void Integer::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	cachedWidth  = i->width();
-	cachedHeight = i->height();
-}
-void Integer::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-	}
-}
-void Integer::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	i->draw(x,y);
-}
-void Integer::saveAsText(std::string& str){
-	i->saveAsText(str);
-}
-
-
-
-Operator::Operator(){
-	op = new TextLine('+');
-	a = new Integer();
-	b = new Integer();
-	recalculateCache(0,0);
-}
-void Operator::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	cachedWidth  = a->width() + op->width() + b->width();
-	cachedHeight = op->height();
-}
-void Operator::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		op->isInside(x,y,blockStack);
-		a->isInside(x,y,blockStack);
-		b->isInside(x,y,blockStack);
-	}
-}
-void Operator::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	a->draw(x,y);
-	op->draw(x + a->width(),y);
-	b->draw(x+a->width()+op->width(), y);
-}
-void Operator::saveAsText(std::string& str){
-	a->saveAsText(str);
-	op->saveAsText(str);
-	b->saveAsText(str);
-}
-
-
-
-
-Expression::Expression(){
-	exp = new Integer();
-	recalculateCache(0,0);
-}
-void Expression::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	cachedWidth  = exp->width();
-	cachedHeight = exp->height();
-}
-void Expression::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		exp->isInside(x,y,blockStack);
-	}
-}
-void Expression::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	exp->draw(x,y);
-}
-void Expression::saveAsText(std::string& str){
-	exp->saveAsText(str);
-}
-
-
-
-
-Type::Type(){
-	type = new TextLine("Type?");
-	recalculateCache(0,0);
-}
-void Type::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	cachedWidth  = type->width();
-	cachedHeight = type->height(); // All have the same height
-}
-void Type::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		type->isInside(x,y,blockStack);
-	}
-}
-void Type::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	type->draw(x,y);
-}
-void Type::saveAsText(std::string& str){
-	type->saveAsText(str);
-}
-
-
-
-Declaration::Declaration(){
-	type = new Type();
-	name = new TextLine("Name?");
-	exp = new Expression();
-	recalculateCache(0,0);
-}
-void Declaration::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	cachedWidth  = type->width() + TextLine(' ').width() + name->width() + TextLine(' ').width() + TextLine('=').width() + TextLine(' ').width() + exp->width();
-	cachedHeight = type->height(); // All have the same height
-}
-void Declaration::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		type->isInside(x,y,blockStack);
-		name->isInside(x,y,blockStack);
-		exp->isInside(x,y,blockStack);
-	}
-}
-void Declaration::draw(float x, float y){
-	// Render: type name = exp
-	cachedPosX = x;
-	cachedPosY = y;
-	type->draw(x,y);
-	name->draw(x + type->width() + TextLine(' ').width(), y);
-	TextLine('=').draw(x + type->width() + TextLine(' ').width() + name->width() + TextLine(' ').width(), y);
-	exp->draw(x + type->width() + TextLine(' ').width() + name->width() + TextLine(' ').width() + TextLine(' ').width() + TextLine('=').width(), y);
-}
-void Declaration::saveAsText(std::string& str){
-	type->saveAsText(str);
-	TextLine(' ').saveAsText(str);
-	name->saveAsText(str);
-	TextLine(" = ").saveAsText(str);
-	exp->saveAsText(str);
-}
-
-
-Variable::Variable(Declaration* decl){
-	this->decl = decl;
-}
-void Variable::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	cachedWidth  = decl->name->width();
-	cachedHeight = decl->name->height();
-}
-void Variable::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		// Dont ask decl, cause we don't contain it, we only point at it...
-	}
-}
-void Variable::draw(float x, float y){
-	// Todo... how should i fix this... This draw function will update the cache for the declarations name... Which will create bugs for picking etc...
-	// So... lets cache the cache... A stupid solution on a stupid problem...
-	float px = decl->name->cachedPosX;
-	float py = decl->name->cachedPosY;
-	decl->name->draw(x,y);
-	decl->name->cachedPosX = px;
-	decl->name->cachedPosY = py;
-}
-void Variable::saveAsText(std::string& str){
-	decl->name->saveAsText(str);
-}
-
-
-Function::Function(){
-	returnType = new Type();
-	name = new TextLine("Name?");
-	parameters.push_back(new Declaration());
-	body.push_back(new Expression());
-	body.push_back(new Declaration());
-	body.push_back(new Expression());
-	recalculateCache(0,0);
-}
-void Function::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	float header_width = returnType->width() + TextLine(' ').width() + name->width() + TextLine('(').width();
-
-	for(size_t i=0; i<parameters.size(); i++){
-		header_width += parameters[i]->width();
-		if(i!=parameters.size()-1)
-			header_width += TextLine(", ").width();
+	float height(){
+		return strings.size() * font_char_height;
 	}
 
-	header_width += TextLine(')').width();
+	void draw(){
+		float rx = width();
+		float ry = height();
 
-	float body_max_width = 0.0;
-	for(size_t i=0; i<body.size(); i++){
-		float body_width = body[i]->width();
-		if( body_max_width < body_width )
-			body_max_width = body_width;
+		for(int r=0; r<int(strings.size()); ++r)
+			strings[r].draw(x, y+r*font_char_height);
+
+		int minC = min(c, int(strings[this->r].str.length()));
+		TextLine('|').draw(x+minC*font_char_width-font_char_width/2, y+this->r*font_char_height, cyan);
+	}
+};
+
+
+std::vector<TextArea> textArea;
+TextArea* activeObject = NULL;
+
+void construct(){
+	textArea.push_back( TextArea() );
+	textArea.push_back( TextArea() );
+	activeObject = &textArea[0];
+
+	textArea[0].strings.push_back(TextLine("#include <stdlib.h>"));
+	textArea[0].strings.push_back(TextLine("#include <stdio.h>"));
+	textArea[0].strings.push_back(TextLine("int square(int i);"));
+	textArea[0].strings.push_back(TextLine("int main(int argc, char* argv[]){"));
+	textArea[0].strings.push_back(TextLine("    printf(\"Hello world! %d\\n\", square(5));"));
+	textArea[0].strings.push_back(TextLine("    system(\"PAUSE\");"));
+	textArea[0].strings.push_back(TextLine("    return EXIT_SUCCESS;"));
+	textArea[0].strings.push_back(TextLine("}"));
+	textArea[0].x = 500;
+	textArea[0].y = 200;
+	textArea[0].c = 1;
+	textArea[0].r = 1;
+
+	textArea[1].strings.push_back(TextLine("int square(int i){"));
+	textArea[1].strings.push_back(TextLine("    return i*i;"));
+	textArea[1].strings.push_back(TextLine("}"));
+	textArea[1].x = 700;
+	textArea[1].y = 500;
+	textArea[1].c = 1;
+	textArea[1].r = 1;
+}
+
+void draw(){
+	for(size_t i=0; i<textArea.size(); ++i)
+		textArea[i].draw();
+}
+
+
+
+
+bool textureAreaKeyInput = true;
+
+void Keyboard(unsigned char key, int x, int y){
+	switch(key){
+	case GLUT_KEY_ESC:
+		exit(0);
+		break;
 	}
 
-	TextLine functionTab("    ");
-	cachedWidth = std::max(header_width, functionTab.width() + body_max_width);
-	
+	if(textureAreaKeyInput && activeObject != NULL){
+		TextArea& ta = *activeObject;
+		ta.c = min(ta.c, int(ta.strings[ta.r].str.length()));
+		std::string availableChars = " ()[]{} +-*/%!\"#&|<>/?^~'.:,;\\";
+		if( isalnum(key) || availableChars.find(key) != availableChars.npos ){
+			ta.strings[ta.r].str.insert(ta.c, 1, key);
+			ta.c++;
+		}
+		else if(key == GLUT_KEY_BACKSPACE){
+			if(ta.c != 0 || ta.r != 0){
+				if(ta.c==0){
+					size_t oldRowsLength = ta.strings[ta.r-1].str.length();
+					ta.strings[ta.r-1].str.append( ta.strings[ta.r].str );
+					ta.strings.erase(ta.strings.begin()+ta.r);
+					ta.c = oldRowsLength;
+					ta.r--;
+				}
+				else{
+					ta.strings[ta.r].str.erase(ta.c-1, 1);
+					ta.c--;
+				}
+			}
+		}
+		else if(key == GLUT_KEY_DELETE){
+			if(ta.r+1 != ta.strings.size() || ta.c != ta.strings[ta.r].str.length()){
+				if(ta.c==ta.strings[ta.r].str.size()){
+					ta.strings[ta.r].str.append( ta.strings[ta.r+1].str );
+					ta.strings.erase(ta.strings.begin()+ta.r+1);
+				}
+				else
+					ta.strings[ta.r].str.erase(ta.c, 1);
+			}
+		}
+		else if(key == GLUT_KEY_ENTER){
+			ta.strings.insert(ta.strings.begin()+ta.r+1, TextLine());
+			ta.strings[ta.r+1].str.append( ta.strings[ta.r].str.begin() + ta.c, ta.strings[ta.r].str.end() );
+			ta.strings[ta.r].str.erase( ta.strings[ta.r].str.begin() + ta.c, ta.strings[ta.r].str.end() );
 
-	float body_height = 0.0;
-	for(size_t i=0; i<body.size(); i++)
-		body_height += body[i]->height();
-	cachedHeight = returnType->height() + body_height;
-}
-void Function::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		returnType->isInside(x,y,blockStack);
-		name->isInside(x,y,blockStack);
-		for(size_t i=0; i<parameters.size(); ++i)
-			parameters[i]->isInside(x,y,blockStack);
-		for(size_t i=0; i<body.size(); ++i)
-			body[i]->isInside(x,y,blockStack);
-	}
-}
-void Function::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	returnType->draw(x,y);
-	name->draw(x + returnType->width() + TextLine(' ').width(), y);
-	TextLine('(').draw(x + returnType->width() + TextLine(' ').width() + name->width(), y);
-
-	float xi = x + returnType->width() + TextLine(' ').width() + name->width() + TextLine('(').width();
-	for(size_t i=0; i<parameters.size(); i++){
-		parameters[i]->draw(xi, y);
-		xi += parameters[i]->width();
-		if(i!=parameters.size()-1){
-			TextLine(", ").draw(xi, y);
-			xi += TextLine(", ").width();
+			ta.r++;
+			ta.c = 0;
 		}
 	}
-	TextLine(')').draw(xi, y);
-
-	y += TextLine(' ').height();
-
-	TextLine functionTab("    ");
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->draw(x + functionTab.width(), y);
-		y += body[i]->height();
-	}
-}
-void Function::saveAsText(std::string& str){
-	returnType->saveAsText(str);
-	TextLine(' ').saveAsText(str);
-	name->saveAsText(str);
-	TextLine("( ").saveAsText(str);
-	for(size_t i=0; i<parameters.size(); i++){
-		parameters[i]->saveAsText(str);
-		if(i!=parameters.size()-1)
-			TextLine(", ").saveAsText(str);
-	}
-	TextLine(" )").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-
-	TextLine("{").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->saveAsText(str);
-
-		if(dynamic_cast<NeedSemiColonIfInsideBody*>(body[i]))
-			str.append(";");
-
-		str.append("\n");
-	}
-
-	TextLine("}").saveAsText(str);
-	TextLine("\n").saveAsText(str);
 }
 
-
-
-
-Class::Class(){
-	name = new TextLine("Name?");
-	body.push_back(new Declaration());
-	body.push_back(new Function());
-	recalculateCache(0,0);
-}
-void Class::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	float header_width = TextLine("class ").width() + name->width();
-
-	float body_max_width = 0.0;
-	for(size_t i=0; i<body.size(); i++){
-		float body_width = body[i]->width();
-		if( body_max_width < body_width )
-			body_max_width = body_width;
+void Keyboard_Special(int key, int x, int y){
+	if(textureAreaKeyInput){
+		TextArea& ta = *activeObject;
+		switch(key){
+		case GLUT_KEY_RIGHT:
+			if(ta.c > int(ta.strings[ta.r].str.size()))
+				ta.c = ta.strings[ta.r].str.size();
+			if(ta.r+1 != ta.strings.size() || ta.c != ta.strings[ta.r].str.size()){
+				ta.c++;
+				if(ta.c > int(ta.strings[ta.r].str.length())){
+					ta.c = 0;
+					ta.r++;
+				}
+			}
+			break;
+		case GLUT_KEY_LEFT:
+			if(ta.c > int(ta.strings[ta.r].str.size()))
+				ta.c = ta.strings[ta.r].str.size();
+			if(ta.r != 0 || ta.c != 0){
+				ta.c--;
+				if(ta.c == -1){
+					ta.r--;
+					ta.c = ta.strings[ta.r].str.length();
+				}
+			}
+			break;
+		case GLUT_KEY_UP:
+			if(ta.r > 0)
+				ta.r--;
+			break;
+		case GLUT_KEY_DOWN:
+			if(ta.r < int(ta.strings.size())-1)
+				ta.r++;
+			break;
+		case GLUT_KEY_HOME:
+			ta.c = 0;
+			break;
+		case GLUT_KEY_END:
+			ta.c = ta.strings[ta.r].str.size();
+			break;
+		}
 	}
 
-	TextLine functionTab("    ");
-	cachedWidth = std::max(header_width, functionTab.width() + body_max_width);
-	
+	// Always compile if F7 is pressed
+	if(key == GLUT_KEY_F7){
+		char fileName[32];
+		strcpy(fileName, "Blocks/fileXXX.cpp");
+		for(size_t i=0; i<textArea.size(); ++i){
+			sprintf(fileName+11, "%03d.cpp", i);
+			FILE* f = fopen(fileName, "wb");
+			for(size_t r=0; r<textArea[i].strings.size(); ++r){
+				// If you get a crash here: create a folder namned "Blocks" in project folder, (the same folder where you have the folder "bpl_source")
+				fwrite(textArea[i].strings[r].str.c_str(), 1, textArea[i].strings[r].str.length(), f);
+				fwrite("\r\n", 1, 2, f);
+			}
+			fclose(f);
+		}
 
-	float body_height = 0.0;
-	for(size_t i=0; i<body.size(); i++)
-		body_height += body[i]->height();
-	cachedHeight = name->height() + body_height;
-}
-void Class::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		name->isInside(x,y,blockStack);
-		for(size_t i=0; i<body.size(); ++i)
-			body[i]->isInside(x,y,blockStack);
+		system("gcc -Os -s -o Blocks/test.exe Blocks/*.cpp\n");
+		system("del /S /F /Q Blocks\\*.cpp > NUL");
+		system("Blocks\\test.exe");
 	}
 }
-void Class::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	TextLine("class ").draw(x,y);
-	name->draw(x + TextLine("class ").width(), y);
-
-	y += TextLine(' ').height();
-
-	TextLine classTab("    ");
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->draw(x + classTab.width(), y);
-		y += body[i]->height();
-	}
-}
-void Class::saveAsText(std::string& str){
-	TextLine("class ").saveAsText(str);
-	name->saveAsText(str);
-
-	TextLine("{").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->saveAsText(str);
-
-		if(dynamic_cast<NeedSemiColonIfInsideBody*>(body[i]))
-			str.append(";");
-
-		str.append("\n");
-	}
-
-	TextLine("}").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-}
-
-
-
-For::For(){
-	decl = new Declaration();
-	exp1 = new Expression();
-	exp2 = new Expression();
-	recalculateCache(0,0);
-}
-void For::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	float header_width = TextLine("for( ").width() + decl->width() + TextLine("; ").width() + exp1->width() + TextLine("; ").width() + exp2->width() + TextLine(" )").width();
-
-	float body_max_width = 0.0;
-	for(size_t i=0; i<body.size(); i++){
-		float body_width = body[i]->width();
-		if( body_max_width < body_width )
-			body_max_width = body_width;
-	}
-
-	TextLine functionTab("    ");
-	cachedWidth = std::max(header_width, functionTab.width() + body_max_width);
-	
-
-	float body_height = 0.0;
-	for(size_t i=0; i<body.size(); i++)
-		body_height += body[i]->height();
-	cachedHeight = decl->height() + body_height;
-}
-void For::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		decl->isInside(x,y,blockStack);
-		exp1->isInside(x,y,blockStack);
-		exp2->isInside(x,y,blockStack);
-		for(size_t i=0; i<body.size(); ++i)
-			body[i]->isInside(x,y,blockStack);
-	}
-}
-void For::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	TextLine("for( ").draw(x,y);
-	decl->draw(x + TextLine("for( ").width(), y);
-	TextLine("; ").draw(x + TextLine("for( ").width() + decl->width(), y);
-	exp1->draw(x + TextLine("for( ").width() + decl->width() + TextLine("; ").width(), y);
-	TextLine("; ").draw(x + TextLine("for( ").width() + decl->width() + TextLine("; ").width() + exp1->width(), y);
-	exp2->draw(x + TextLine("for( ").width() + decl->width() + TextLine("; ").width() + exp1->width() + TextLine("; ").width(), y);
-	TextLine(" )").draw(x + TextLine("for( ").width() + decl->width() + TextLine("; ").width() + exp1->width() + TextLine("; ").width() + exp2->width(), y);
-
-	y += TextLine(' ').height();
-
-	TextLine forTab("    ");
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->draw(x + forTab.width(), y);
-		y += body[i]->height();
-	}
-}
-void For::saveAsText(std::string& str){
-	TextLine("for( ").saveAsText(str);
-	decl->saveAsText(str);
-	TextLine("; ").saveAsText(str);
-	exp1->saveAsText(str);
-	TextLine("; ").saveAsText(str);
-	exp2->saveAsText(str);
-	TextLine(" )\n").saveAsText(str);
-
-	TextLine("{").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->saveAsText(str);
-
-		if(dynamic_cast<NeedSemiColonIfInsideBody*>(body[i]))
-			str.append(";");
-
-		str.append("\n");
-	}
-
-	TextLine("}").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-}
-
-
-
-If::If(){
-	exp = new Expression();
-	recalculateCache(0,0);
-}
-void If::recalculateCache(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-
-	float header_width = TextLine("if( ").width() + exp->width() + TextLine(" )").width();
-
-	float body_max_width = 0.0;
-	for(size_t i=0; i<body.size(); i++){
-		float body_width = body[i]->width();
-		if( body_max_width < body_width )
-			body_max_width = body_width;
-	}
-
-	TextLine functionTab("    ");
-	cachedWidth = std::max(header_width, functionTab.width() + body_max_width);
-	
-
-	float body_height = 0.0;
-	for(size_t i=0; i<body.size(); i++)
-		body_height += body[i]->height();
-	cachedHeight = exp->height() + body_height;
-}
-void If::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		exp->isInside(x,y,blockStack);
-		for(size_t i=0; i<body.size(); ++i)
-			body[i]->isInside(x,y,blockStack);
-	}
-}
-void If::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	TextLine("if( ").draw(x,y);
-	exp->draw(x + TextLine("if( ").width(), y);
-	TextLine(" )").draw(x + TextLine("if( ").width() + exp->width(), y);
-
-	y += TextLine(' ').height();
-
-	TextLine ifTab("    ");
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->draw(x + ifTab.width(), y);
-		y += body[i]->height();
-	}
-}
-void If::saveAsText(std::string& str){
-	TextLine("if( ").saveAsText(str);
-	exp->saveAsText(str);
-	TextLine(" )\n").saveAsText(str);
-
-	TextLine("{").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->saveAsText(str);
-
-		if(dynamic_cast<NeedSemiColonIfInsideBody*>(body[i]))
-			str.append(";");
-
-		str.append("\n");
-	}
-
-	TextLine("}").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-}
-
-
-
-While::While(){
-	exp = new Expression();
-	recalculateCache(0,0);
-}
-void While::recalculateCache(float x, float y){
-	cachedPosX  = x;
-	cachedPosY  = y;
-
-	float header_width = TextLine("while( ").width() + exp->width() + TextLine(" )").width();
-
-	float body_max_width = 0.0;
-	for(size_t i=0; i<body.size(); i++){
-		float body_width = body[i]->width();
-		if( body_max_width < body_width )
-			body_max_width = body_width;
-	}
-
-	TextLine functionTab("    ");
-	cachedWidth = std::max(header_width, functionTab.width() + body_max_width);
-	
-	
-	float body_height = 0.0;
-	for(size_t i=0; i<body.size(); i++)
-		body_height += body[i]->height();
-	cachedHeight = exp->height() + body_height;
-}
-void While::isInside(float x, float y, std::vector<IsBlock*>& blockStack){
-	if(isInsideMeTest(x,y)){
-		blockStack.push_back(this);
-		exp->isInside(x,y,blockStack);
-		for(size_t i=0; i<body.size(); ++i)
-			body[i]->isInside(x,y,blockStack);
-	}
-}
-void While::draw(float x, float y){
-	cachedPosX = x;
-	cachedPosY = y;
-	TextLine("while( ").draw(x,y);
-	exp->draw(x + TextLine("while( ").width(), y);
-	TextLine(" )").draw(x + TextLine("while( ").width() + exp->width(), y);
-
-	y += TextLine(' ').height();
-
-	TextLine ifTab("    ");
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->draw(x + ifTab.width(), y);
-		y += body[i]->height();
-	}
-}
-void While::saveAsText(std::string& str){
-	TextLine("while( ").saveAsText(str);
-	exp->saveAsText(str);
-	TextLine(" )\n").saveAsText(str);
-
-	TextLine("{").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-
-	for(size_t i=0; i<body.size(); i++){
-		body[i]->saveAsText(str);
-
-		if(dynamic_cast<NeedSemiColonIfInsideBody*>(body[i]))
-			str.append(";");
-
-		str.append("\n");
-	}
-
-	TextLine("}").saveAsText(str);
-	TextLine("\n").saveAsText(str);
-}
-
 
 }

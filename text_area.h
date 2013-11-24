@@ -126,7 +126,7 @@ namespace text_area
 		SDL_FreeSurface(sdl_surface);
 	}
 
-	void draw_unwrapped(const std::vector<uint16_t>& text_data, TTF_Font* text_font, float rectangle_u, float rectangle_v, float rectangle_w, float rectangle_h)
+	void draw_unwrapped(const std::vector<uint16_t>& text_data, TTF_Font* text_font, float rectangle_u, float rectangle_v, float rectangle_w, float rectangle_h, const SDL_Color& color = rgba_color)
 	{
 		//http://www.sdltutorials.com/sdl-ttf
 		int line_start_index = 0;
@@ -158,7 +158,7 @@ namespace text_area
 
 					int min_x, max_x, min_y, max_y, advance_x;
 					TTF_GlyphMetrics(text_font, glyph, &min_x, &max_x, &min_y, &max_y, &advance_x);
-					SDL_Surface* sdl_surface = TTF_RenderGlyph_Blended(text_font, glyph, rgba_color);
+					SDL_Surface* sdl_surface = TTF_RenderGlyph_Blended(text_font, glyph, color);
 
 					//ATTENTION remember to unbind texture2d and disable it before, otherwize the text will not be visible or might be drawn with strange colors
 					//glDisable(GL_TEXTURE_2D);
@@ -226,11 +226,12 @@ void bolls_init_font_char_size(){
 	font_char_height = TTF_FontLineSkip(text_font);
 }
 
-void bolls_draw_text(const std::string& text, float x, float y){
+void bolls_draw_text(const std::string& text, float x, float y, const SDL_Color& color = text_area::rgba_color){
 	using namespace text_area;
 
 	std::vector<uint16_t> text_data;
 	for(size_t i = 0; i<text.size(); ++i)
 		text_data.push_back(text[i]);
-	draw_unwrapped(text_data, text_font, rectangle_u+x, rectangle_v+y, rectangle_w+x, rectangle_h+y);
+
+	draw_unwrapped(text_data, text_font, rectangle_u+x, rectangle_v+y, rectangle_w+x, rectangle_h+y, color);
 }
