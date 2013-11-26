@@ -32,4 +32,5 @@ struct TextLine{
 
 void Keyboard(unsigned char key, int x, int y);
 void Keyboard_Special(int key, int x, int y);
+void mouseFunction(int button, int state, int x, int y);
 }

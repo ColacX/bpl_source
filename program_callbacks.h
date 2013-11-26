@@ -26,6 +26,7 @@ void mouse_function(int button, int state, int x, int y)
 {
 	water_effect::mouse_interaction(x, y);
 	particle_system::addSource(x, y);
+	blockTypes::mouseFunction(button, state, x, y);
 }
 
 void mouse_motion_function(int x, int y)
