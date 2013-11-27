@@ -18,6 +18,8 @@ void bolls_draw_text(const std::string& text, float x, float y, const SDL_Color&
 extern float font_char_width;
 extern float font_char_height;
 extern GLuint CreateShaderProgram(const char* vert_source = 0, const char* frag_source = 0, const char* geom_source = 0);
+extern int window_width;
+extern int window_height;
 
 namespace blockTypes{
 	
@@ -27,8 +29,8 @@ SDL_Color blue  = {0x00, 0x00, 0xff, 0x00};
 SDL_Color cyan  = {0x00, 0xff, 0xff, 0x00};
 
 
-int text_width = 1280;
-int text_height = 720;
+int text_width = window_width;
+int text_height = window_height;
 GLuint text_buffer_texture;
 GLuint text_frame_buffer;
 GLuint block_type_shader;
@@ -177,7 +179,7 @@ void construct(){
 
 
 	textArea[2].x = 400;
-	textArea[2].y = 300;
+	textArea[2].y = 0;
 	textArea[2].c = 1;
 	textArea[2].r = 1;
 

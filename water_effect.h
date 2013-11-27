@@ -9,8 +9,8 @@ namespace water_effect
 	GLuint water_effect_update, water_effect_rendering, water_effect_mouse;
 	GLuint water_effect_frame_buffer;
 	GLuint background_texture;
-	int water_width = 1280;
-	int water_height = 720;
+	int water_width = window_width;
+	int water_height = window_height;
 	bool ping_pong = false;
 
 	GLuint construct_color_texture()
@@ -140,10 +140,10 @@ namespace water_effect
 		float s = (float)mx/(float)water_width*2.0f - 1.0f;
 		float t = (float)my/(float)water_height*2.0f - 1.0f;
 
-		//glBegin(GL_POINTS);
-		//glVertexAttrib4f(1, 1, 0, 0, 1);
-		//glVertexAttrib2f(0, s, t);
-		//glEnd();
+		glBegin(GL_POINTS);
+		glVertexAttrib4f(1, 1, 0, 0, 1);
+		glVertexAttrib2f(0, s, t);
+		glEnd();
 
 		glBegin(GL_TRIANGLE_STRIP);
 		//color; position;

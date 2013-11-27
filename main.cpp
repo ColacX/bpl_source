@@ -29,7 +29,7 @@
 
 //global variables---------------------------------------------------------------
 //temporary buffer, use carefully
-#define t_size 1920*720*4*4
+#define t_size 1024*1080*4*4
 static union
 {
 	unsigned char c[t_size/sizeof(unsigned char)];
@@ -39,8 +39,8 @@ static union
 	long l[t_size/sizeof(long)];
 } t;
 
-int window_width = 1280;
-int window_height = 720;
+int window_width = 1800;
+int window_height = 1024;
 GLuint shader_program_text;
 
 //custom header files------------------------------------------------------------
