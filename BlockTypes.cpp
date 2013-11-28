@@ -111,7 +111,7 @@ void construct(){
 	textArea.push_back( TextArea() );
 	textArea.push_back( TextArea() );
 	textArea.push_back( TextArea() );
-	activeObject = &textArea[0];
+	activeObject = &textArea[2];
 
 	textArea[0].strings.push_back(TextLine("$RaytracerEngine"));
 	textArea[0].strings.push_back(TextLine("#antialiasing = true"));
@@ -121,9 +121,8 @@ void construct(){
 	textArea[0].c = 1;
 	textArea[0].r = 1;
 
-	textArea[1].strings.push_back(TextLine("$Constructor"));
-	textArea[1].strings.push_back(TextLine(""));
-	textArea[1].strings.push_back(TextLine("    printf(\"The raytracer is starting!\\n\");"));
+	textArea[1].strings.push_back(TextLine("$Uniforms"));
+	textArea[1].strings.push_back(TextLine("Texture tex0 = \"Grass.bmp\""));
 	textArea[1].x = 0;
 	textArea[1].y = 500;
 	textArea[1].c = 1;
@@ -299,6 +298,22 @@ void compile(){
 
 		FILE* maindst = fopen("Blocks\\main.cpp", "ab");
 
+		
+		// add uniforms to shader
+		for(size_t i=1; i<textArea[1].strings.size(); ++i){
+			if(strncmp(textArea[1].strings[i].str.c_str(), "Texture ", 8) == 0){
+				size_t equalSignPos = textArea[1].strings[i].str.find('=',0);
+
+				char temp[256] = "\"uniform sampler2D ";
+				strncpy_s(temp+19, 256-19, textArea[1].strings[i].str.c_str()+8, equalSignPos-8);
+				size_t n = strlen(temp);
+				strcpy_s(temp+n, 256-n, ";\"\r\n" );
+
+				fwrite(temp, 1, n+4, maindst);
+			}
+		}
+
+		// add shader
 		std::vector<size_t> tabs(textArea[2].strings.size(), 0);
 		for(size_t i=0; i<textArea[2].strings.size(); ++i){
 			size_t s;
@@ -368,12 +383,79 @@ void compile(){
 
 		fwrite(";\n", 1, 2, maindst);
 
+		
+		// add uniforms to cpp - global handles for textures
+		for(size_t i=1; i<textArea[1].strings.size(); ++i){
+			if(strncmp(textArea[1].strings[i].str.c_str(), "Texture ", 8) == 0){
+				size_t equalSignPos = textArea[1].strings[i].str.find('=',0);
+
+				char temp[256] = "int ";
+				size_t n = strncpy_s(temp+4, 256-4, textArea[1].strings[i].str.c_str()+8, equalSignPos-8);
+				n = strlen(temp);
+				strcpy_s(temp+n, 256-n, ";\r\n" );
+
+				fwrite(temp, 1, n+3, maindst);
+			}
+			else
+				__debugbreak();
+		}
+		
+		// create the function for loading all the textures
+		fwrite("int loadTexture(const char* filename);", 1, 38, maindst);
+		fwrite("extern int p;\r\n", 1, 15, maindst);
+		fwrite("void loadTextures(){\r\n", 1, 22, maindst);
+		fwrite("void* procaddr(const char*);\r\n", 1, 30, maindst);
+		fwrite("typedef void(* PFNGLUNIFORM1IPROC) (int location, int v0);\r\n", 1, 60, maindst);
+		fwrite("extern PFNGLUNIFORM1IPROC glUniform1i;\r\n", 1, 40, maindst);
+		fwrite("int print(const char*, ...);\r\n", 1, 30, maindst);
+		fwrite("typedef int (__stdcall * PFNGLGETUNIFORMLOCATIONPROC) (int program, const char* name);\r\n", 1, 88, maindst);
+		fwrite("PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)procaddr(\"glGetUniformLocation\");\r\n", 1, 115, maindst);
+		size_t texId = 0;
+		for(size_t i=1; i<textArea[1].strings.size(); ++i){
+			if(strncmp(textArea[1].strings[i].str.c_str(), "Texture ", 8) == 0){
+				size_t equalSignPos = textArea[1].strings[i].str.find('=',0);
+
+				char temp[1024] = "";
+				size_t n = 0;
+
+				strncpy_s(temp+n, 1024-n, textArea[1].strings[i].str.c_str() + 8, equalSignPos - 8 - 1); // copy name
+				n=strlen(temp);
+				strcpy_s(temp+n, 1024-n, " = loadTexture(");
+				n=strlen(temp);
+				strcpy_s(temp+n, 1024-n, textArea[1].strings[i].str.c_str() + equalSignPos+1); // copy filename
+				n=strlen(temp);
+				strcpy_s(temp+n, 1024-n, ");\r\n" );
+				n=strlen(temp);
+
+				// Fetch uniform and set correct ID
+				strcpy_s(temp+n, 1024-n, "int i;");
+				n=strlen(temp);
+				strcpy_s(temp+n, 1024-n, "glUniform1i(i=glGetUniformLocation(p, \"");
+				n=strlen(temp);
+				strncpy_s(temp+n, 1024-n, textArea[1].strings[i].str.c_str() + 8, equalSignPos - 8 - 1); // copy name
+				n=strlen(temp);
+				strcpy_s(temp+n, 1024-n, "\"), ");
+				n=strlen(temp);
+				n+= sprintf_s(temp+n, 1024-n, "%d);", texId);
+				strcpy_s(temp+n, 1024-n, "print(\"uniloc = %d\\n\", i);");
+				n=strlen(temp);
+
+				fwrite(temp, 1, n, maindst);
+				texId++;
+			}
+			else
+				__debugbreak();
+		}
+		fwrite("}\r\n", 1, 3, maindst);
+
+
 		fclose(maindst);
 
 		system("del /S /F /Q Blocks\\*.exe > NUL");
 		system("type bpl_binary\\CodeLibrary\\RaytracerEngine_main.cpp >> Blocks\\main.cpp");
-		system("gcc -Os -s -o Blocks\\test.exe Blocks\\*.cpp -lopengl32 -lglu32 -lgdi32"); //  -mwindows
-		system("del /S /F /Q Blocks\\*.cpp > NUL");
+		system("C:\\MinGW\\bin\\gcc -Os -s -o Blocks\\test.exe Blocks\\*.cpp -lopengl32 -lglu32 -lgdi32"); //  -mwindows
+		//system("C:\\MinGW\\bin\\gcc -Os -s -o c:\\Users\\Boll\\C++\\project_bpl_clone0\\Blocks\\test.exe c:\\Users\\Boll\\C++\\project_bpl_clone0\\Blocks\\main.cpp -lopengl32 -lglu32 -lgdi32");
+		//system("del /S /F /Q Blocks\\*.cpp > NUL");
 		system("Blocks\\test.exe");
 	}
 

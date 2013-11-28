@@ -96,7 +96,7 @@ namespace water_effect
 	}
 
 	void draw()
-	{
+	{/*
 		glUseProgram(water_effect_rendering);
 		glEnable(GL_TEXTURE_2D);
 
@@ -124,7 +124,7 @@ namespace water_effect
 		glBindTexture(GL_TEXTURE_2D, 0);
 		
 		glDisable(GL_TEXTURE_2D);
-		glUseProgram(0);
+		glUseProgram(0);*/
 	}
 
 	void mouse_interaction(int mx, int my)
