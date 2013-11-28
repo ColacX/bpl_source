@@ -94,20 +94,24 @@ namespace particle_system
 	}
 
 
-	void addSource(int x, int y)
+	void addSource(int mx, int my)
 	{
-		float screenX = 2 * (float)x / window_width - 1;
-		float screenY = 1 - 2 * (float)y / window_height;
+		float s = (float)mx / (float)window_width*2.0f - 1.0f;
+		float t = (float)my / (float)window_height*2.0f - 1.0f;
+
+		//float screenX = 2 * (float)x / window_width - 1;
+		//float screenY = 1 - 2 * (float)y / window_height;
 
 		for (int i = 0; i < NB_PARTICLES; i++) {
-			addParticle(glm::vec2(screenX, screenY));
+			addParticle(glm::vec2(s, t));
 		}
 	}
 
 	void draw()
 	{
 		glm::mat4 projection;
-		projection = glm::perspective(70.0, (double)window_width / window_height, 1.0, 100.0);
+		//projection = glm::perspective(45.0, (double)window_width / window_height, 1.0, 100.0);
+		projection = glm::ortho(-1.0, 1.0, +1.0, -1.0, 0.1, 100.0);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

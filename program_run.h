@@ -7,7 +7,7 @@ void program_run()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		water_effect::update();
 		water_effect::draw();
-		text_area::draw();
+		//text_area::draw();
 		blockTypes::draw();
 		particle_system::update();
 		particle_system::draw();

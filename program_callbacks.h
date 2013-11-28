@@ -6,8 +6,8 @@ void window_display_function()
 
 void window_reshape_function(int width, int height)
 {
-	window_width = width;
-	window_height = height;
+	//dont allow resize of window
+	glutReshapeWindow(window_width, window_height);
 }
 
 void keyboard_function(unsigned char key, int x, int y)

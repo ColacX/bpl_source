@@ -14,5 +14,5 @@ void main()
 	frag_color = texture2D(background_sampler, st + vec2(dx, dy));
 
 	//frag_color = texture2D(background_sampler, st);
-	//frag_color = texture2D(height_sampler, st);
+	frag_color = texture2D(height_sampler, st);
 }

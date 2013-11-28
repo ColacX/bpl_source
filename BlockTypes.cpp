@@ -17,8 +17,9 @@
 void bolls_draw_text(const std::string& text, float x, float y, const SDL_Color& color);
 extern float font_char_width;
 extern float font_char_height;
-
-
+extern GLuint CreateShaderProgram(const char* vert_source = 0, const char* frag_source = 0, const char* geom_source = 0);
+extern int window_width;
+extern int window_height;
 
 namespace blockTypes{
 	
@@ -27,6 +28,12 @@ SDL_Color green = {0x00, 0xff, 0x00, 0x00};
 SDL_Color blue  = {0x00, 0x00, 0xff, 0x00};
 SDL_Color cyan  = {0x00, 0xff, 0xff, 0x00};
 
+
+int text_width = window_width;
+int text_height = window_height;
+GLuint text_buffer_texture;
+GLuint text_frame_buffer;
+GLuint block_type_shader;
 
 void compile();
 
@@ -104,8 +111,24 @@ struct TextArea{
 };
 
 
+
 std::vector<TextArea> textArea;
 TextArea* activeObject = NULL;
+
+void update_draw()
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, text_frame_buffer);
+	glDrawBuffer(GL_COLOR_ATTACHMENT0);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	for (size_t i = 0; i<textArea.size(); ++i)
+		textArea[i].draw();
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	//doesnt swap the buffers, thats why theres a freeze when pressing  down a key
+}
 
 void construct(){
 	textArea.push_back( TextArea() );
@@ -155,18 +178,90 @@ void construct(){
 
 
 	textArea[2].x = 400;
-	textArea[2].y = 300;
+	textArea[2].y = 0;
 	textArea[2].c = 1;
 	textArea[2].r = 1;
+
+	block_type_shader = CreateShaderProgram("bpl_source/block_type_shader.glsl", "bpl_source/block_type_shader.glsl");
+
+	{
+		GLuint generated_texture;
+		glGenTextures(1, &generated_texture);
+		glBindTexture(GL_TEXTURE_2D, generated_texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); //GL_NEAREST, GL_LINEAR
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST); //GL_NEAREST, GL_LINEAR
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+		GLfloat border_color[4] = { 0, 0, 0, 0 };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+
+		glTexImage2D(
+			GL_TEXTURE_2D, //target
+			0, //mipmap-level
+			GL_RGBA, //texture format
+			text_width, //texture width
+			text_height, //texture height
+			0, //this value must be 0? lol.
+			GL_RED, //input data format
+			GL_FLOAT, //input data element type
+			0 //input data
+		);
+
+		glBindTexture(GL_TEXTURE_2D, 0);
+		text_buffer_texture = generated_texture;
+	}
+
+	{
+		//http://www.songho.ca/opengl/gl_fbo.html
+		GLuint generated_frame_buffer;
+		glGenFramebuffers(1, &generated_frame_buffer);
+		glBindFramebuffer(GL_FRAMEBUFFER, generated_frame_buffer);
+
+		//Attaching a 2D texture image to FBO
+		glFramebufferTexture2D(
+			GL_FRAMEBUFFER, //GL_DRAW_FRAMEBUFFER, GL_READ_FRAMEBUFFER, GL_FRAMEBUFFER
+			GL_COLOR_ATTACHMENT0, //GL_COLOR_ATTACHMENTi, GL_DEPTH_ATTACHMENT, GL_STENCIL_ATTACHMENT, GL_DEPTH_STENCIL_ATTACHMENT
+			GL_TEXTURE_2D, //specifies what type of texture is attached
+			text_buffer_texture, //texture id
+			0 //mip map level to attach
+		);
+
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			throw "error glCheckFramebufferStatus";
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		text_frame_buffer = generated_frame_buffer;
+	}
+
+	update_draw();
 }
 
-void draw(){
-	for(size_t i=0; i<textArea.size(); ++i)
-		textArea[i].draw();
+void draw()
+{
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+
+	glUseProgram(block_type_shader);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, text_buffer_texture);
+
+	glBegin(GL_TRIANGLE_STRIP);
+	//texcoord; position;
+	glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1, -1); //bottom left
+	glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, +1, -1); //bottom right
+	glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1, +1); //top left
+	glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, +1, +1); //top right
+	glEnd();
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	glUseProgram(0);
+
+	glDisable(GL_BLEND);
 }
-
-
-
 
 bool textureAreaKeyInput = true;
 
@@ -184,6 +279,8 @@ void Keyboard(unsigned char key, int x, int y){
 		if( isalnum(key) || availableChars.find(key) != availableChars.npos ){
 			ta.strings[ta.r].str.insert(ta.c, 1, key);
 			ta.c++;
+
+			update_draw();
 		}
 		else if(key == GLUT_KEY_BACKSPACE){
 			if(ta.c != 0 || ta.r != 0){
@@ -198,6 +295,8 @@ void Keyboard(unsigned char key, int x, int y){
 					ta.strings[ta.r].str.erase(ta.c-1, 1);
 					ta.c--;
 				}
+
+				update_draw();
 			}
 		}
 		else if(key == GLUT_KEY_DELETE){
@@ -208,6 +307,8 @@ void Keyboard(unsigned char key, int x, int y){
 				}
 				else
 					ta.strings[ta.r].str.erase(ta.c, 1);
+
+				update_draw();
 			}
 		}
 		else if(key == GLUT_KEY_ENTER){
@@ -217,6 +318,7 @@ void Keyboard(unsigned char key, int x, int y){
 
 			ta.r++;
 			ta.c = 0;
+			update_draw();
 		}
 	}
 }
@@ -226,40 +328,58 @@ void Keyboard_Special(int key, int x, int y){
 		TextArea& ta = *activeObject;
 		switch(key){
 		case GLUT_KEY_RIGHT:
-			if(ta.c > int(ta.strings[ta.r].str.size()))
+			if (ta.c > int(ta.strings[ta.r].str.size()))
+			{
 				ta.c = ta.strings[ta.r].str.size();
+				update_draw();
+			}
+
 			if(ta.r+1 != ta.strings.size() || ta.c != ta.strings[ta.r].str.size()){
 				ta.c++;
 				if(ta.c > int(ta.strings[ta.r].str.length())){
 					ta.c = 0;
 					ta.r++;
 				}
+				update_draw();
 			}
 			break;
 		case GLUT_KEY_LEFT:
-			if(ta.c > int(ta.strings[ta.r].str.size()))
+			if (ta.c > int(ta.strings[ta.r].str.size()))
+			{
 				ta.c = ta.strings[ta.r].str.size();
+				update_draw();
+			}
+
 			if(ta.r != 0 || ta.c != 0){
 				ta.c--;
 				if(ta.c == -1){
 					ta.r--;
 					ta.c = ta.strings[ta.r].str.length();
 				}
+				update_draw();
 			}
 			break;
 		case GLUT_KEY_UP:
-			if(ta.r > 0)
+			if (ta.r > 0)
+			{
 				ta.r--;
+				update_draw();
+			}
 			break;
 		case GLUT_KEY_DOWN:
-			if(ta.r < int(ta.strings.size())-1)
+			if (ta.r < int(ta.strings.size()) - 1)
+			{
 				ta.r++;
+				update_draw();
+			}
 			break;
 		case GLUT_KEY_HOME:
 			ta.c = 0;
+			update_draw();
 			break;
 		case GLUT_KEY_END:
 			ta.c = ta.strings[ta.r].str.size();
+			update_draw();
 			break;
 		}
 	}
