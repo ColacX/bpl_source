@@ -414,6 +414,7 @@ void compile(){
 
 		if( ! directoryExists("Blocks") )
 			CreateDirectoryA("Blocks", NULL);
+
 		system("copy /b bpl_binary\\CodeLibrary\\RaytracerEngine_fragHelper Blocks\\main.cpp > NUL");
 
 		FILE* maindst = fopen("Blocks\\main.cpp", "ab");
@@ -499,10 +500,9 @@ void compile(){
 			// Then we have a " to close the string, and after that a windows newline for a new line in the output textfile
 			fwrite("\\n\"\r\n", 1, 5, maindst);
 		}
+		
 		fwrite("\"}\"\r\n", 1, 5, maindst); // end brace
-
 		fwrite(";\n", 1, 2, maindst);
-
 		
 		// add uniforms to cpp - global handles for textures
 		for(size_t i=1; i<textArea[1].strings.size(); ++i){
@@ -567,16 +567,14 @@ void compile(){
 				__debugbreak();
 		}
 		fwrite("}\r\n", 1, 3, maindst);
-
-
 		fclose(maindst);
-
-		system("del /S /F /Q Blocks\\*.exe > NUL");
-		system("type bpl_binary\\CodeLibrary\\RaytracerEngine_main.cpp >> Blocks\\main.cpp");
-		system("C:\\MinGW\\bin\\gcc -Os -s -o Blocks\\test.exe Blocks\\*.cpp -lopengl32 -lglu32 -lgdi32"); //  -mwindows
-		//system("C:\\MinGW\\bin\\gcc -Os -s -o c:\\Users\\Boll\\C++\\project_bpl_clone0\\Blocks\\test.exe c:\\Users\\Boll\\C++\\project_bpl_clone0\\Blocks\\main.cpp -lopengl32 -lglu32 -lgdi32");
-		//system("del /S /F /Q Blocks\\*.cpp > NUL");
-		system("Blocks\\test.exe");
+		system(R"(bpl_source\compile_executable.bat)");
+		//system(R"(del /S /F /Q Blocks\*.exe > NUL)");
+		//system(R"(type bpl_binary\CodeLibrary\RaytracerEngine_main.cpp >> Blocks\main.cpp)");
+		//system(R"(C:\cygwin64\bin\gcc -Os -s -o Blocks/test.exe Blocks/*.cpp -lopengl32 -lglu32 -lgdi32)");
+		////system("C:\\MinGW\\bin\\gcc -Os -s -o c:\\Users\\Boll\\C++\\project_bpl_clone0\\Blocks\\test.exe c:\\Users\\Boll\\C++\\project_bpl_clone0\\Blocks\\main.cpp -lopengl32 -lglu32 -lgdi32");
+		////system("del /S /F /Q Blocks\\*.cpp > NUL");
+		//system(R"(Blocks\test.exe)");
 	}
 
 
