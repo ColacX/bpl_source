@@ -246,8 +246,54 @@ void construct(){
 	need_update();
 }
 
+
+void draw_block_graphic(){
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER);
+	/*
+	printf("textarea.x %f /n", textArea[0].x);
+	printf("textarea.y %f /n", textArea[0].y);
+	*/
+
+	float currentScroll = 0;
+	float wingroom = 0.005f; //some extra space for the block
+	float width = window_width / 2;
+	float height = window_height / 2;
+
+	for (int i = 0; i < textArea.size(); i++){
+
+		currentScroll = textArea[i].r * font_char_height / height;
+
+		glBegin(GL_TRIANGLE_STRIP);
+		//texcoord; position;
+		glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1 + (textArea[i].x / width) - wingroom, +1 - (textArea[i].y / height) + currentScroll + wingroom); //top left check
+		glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, -1 + (textArea[i].x / width) + (textArea[i].width() / width) + wingroom, +1 - (textArea[i].y / height) + currentScroll + wingroom); //top right check
+		glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1 + (textArea[i].x / width) - wingroom, +1 - (textArea[i].y / height) - (textArea[i].height() / height) + currentScroll - wingroom); //bottom left check
+		glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, -1 + (textArea[i].x / width) + (textArea[i].width() / width) + wingroom, +1 - (textArea[i].y / height) - (textArea[i].height() / height) + currentScroll - wingroom); //bottom right
+		glEnd();
+	}
+	//printf("textarea height %f /n", textArea[0].height());
+	//printf("textarea width %f /n", textArea[0].width());
+	//printf("textarea lines %i" ,textArea[0].strings.size());
+}
+/*
+void draw(){
+
+	// draw the block behind the text
+	draw_block_graphic();
+
+	for (size_t i = 0; i < textArea.size(); ++i)
+		textArea[i].draw();
+}
+*/
+
+
 void draw()
 {
+
+	// draw the block behind the text
+	draw_block_graphic();
+
 	check_update();
 
 	glEnable(GL_BLEND);
