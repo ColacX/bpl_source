@@ -114,9 +114,20 @@ struct TextArea{
 
 std::vector<TextArea> textArea;
 TextArea* activeObject = NULL;
+bool modified = true;
 
-void update_draw()
+void need_update()
 {
+	modified = true;
+}
+
+void check_update()
+{
+	if (!modified)
+		return;
+
+	modified = false;
+
 	glBindFramebuffer(GL_FRAMEBUFFER, text_frame_buffer);
 	glDrawBuffer(GL_COLOR_ATTACHMENT0);
 
@@ -126,8 +137,6 @@ void update_draw()
 		textArea[i].draw();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	//doesnt swap the buffers, thats why theres a freeze when pressing  down a key
 }
 
 void construct(){
@@ -234,11 +243,13 @@ void construct(){
 		text_frame_buffer = generated_frame_buffer;
 	}
 
-	update_draw();
+	need_update();
 }
 
 void draw()
 {
+	check_update();
+
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -280,7 +291,7 @@ void Keyboard(unsigned char key, int x, int y){
 			ta.strings[ta.r].str.insert(ta.c, 1, key);
 			ta.c++;
 
-			update_draw();
+			need_update();
 		}
 		else if(key == GLUT_KEY_BACKSPACE){
 			if(ta.c != 0 || ta.r != 0){
@@ -296,7 +307,7 @@ void Keyboard(unsigned char key, int x, int y){
 					ta.c--;
 				}
 
-				update_draw();
+				need_update();
 			}
 		}
 		else if(key == GLUT_KEY_DELETE){
@@ -308,7 +319,7 @@ void Keyboard(unsigned char key, int x, int y){
 				else
 					ta.strings[ta.r].str.erase(ta.c, 1);
 
-				update_draw();
+				need_update();
 			}
 		}
 		else if(key == GLUT_KEY_ENTER){
@@ -318,7 +329,7 @@ void Keyboard(unsigned char key, int x, int y){
 
 			ta.r++;
 			ta.c = 0;
-			update_draw();
+			need_update();
 		}
 	}
 }
@@ -331,7 +342,7 @@ void Keyboard_Special(int key, int x, int y){
 			if (ta.c > int(ta.strings[ta.r].str.size()))
 			{
 				ta.c = ta.strings[ta.r].str.size();
-				update_draw();
+				need_update();
 			}
 
 			if(ta.r+1 != ta.strings.size() || ta.c != ta.strings[ta.r].str.size()){
@@ -340,14 +351,14 @@ void Keyboard_Special(int key, int x, int y){
 					ta.c = 0;
 					ta.r++;
 				}
-				update_draw();
+				need_update();
 			}
 			break;
 		case GLUT_KEY_LEFT:
 			if (ta.c > int(ta.strings[ta.r].str.size()))
 			{
 				ta.c = ta.strings[ta.r].str.size();
-				update_draw();
+				need_update();
 			}
 
 			if(ta.r != 0 || ta.c != 0){
@@ -356,30 +367,30 @@ void Keyboard_Special(int key, int x, int y){
 					ta.r--;
 					ta.c = ta.strings[ta.r].str.length();
 				}
-				update_draw();
+				need_update();
 			}
 			break;
 		case GLUT_KEY_UP:
 			if (ta.r > 0)
 			{
 				ta.r--;
-				update_draw();
+				need_update();
 			}
 			break;
 		case GLUT_KEY_DOWN:
 			if (ta.r < int(ta.strings.size()) - 1)
 			{
 				ta.r++;
-				update_draw();
+				need_update();
 			}
 			break;
 		case GLUT_KEY_HOME:
 			ta.c = 0;
-			update_draw();
+			need_update();
 			break;
 		case GLUT_KEY_END:
 			ta.c = ta.strings[ta.r].str.size();
-			update_draw();
+			need_update();
 			break;
 		}
 	}
