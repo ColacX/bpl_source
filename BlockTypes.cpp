@@ -4,6 +4,7 @@
 #include <gl\glew.h>
 #include <gl\glut.h>
 #include <gl\gl.h>
+#include <time.h>
 
 #define GLUT_KEY_BACKSPACE  8
 #define GLUT_KEY_ENTER     13
@@ -20,6 +21,10 @@ extern float font_char_height;
 extern GLuint CreateShaderProgram(const char* vert_source = 0, const char* frag_source = 0, const char* geom_source = 0);
 extern int window_width;
 extern int window_height;
+
+bool within = false; //without this the blocks will jump if you press in empty space
+int xDistance = 0;
+int yDistance = 0;
 
 namespace blockTypes{
 	
@@ -272,20 +277,8 @@ void draw_block_graphic(){
 		glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, -1 + (textArea[i].x / width) + (textArea[i].width() / width) + wingroom, +1 - (textArea[i].y / height) - (textArea[i].height() / height) + currentScroll - wingroom); //bottom right
 		glEnd();
 	}
-	//printf("textarea height %f /n", textArea[0].height());
-	//printf("textarea width %f /n", textArea[0].width());
-	//printf("textarea lines %i" ,textArea[0].strings.size());
-}
-/*
-void draw(){
 
-	// draw the block behind the text
-	draw_block_graphic();
-
-	for (size_t i = 0; i < textArea.size(); ++i)
-		textArea[i].draw();
 }
-*/
 
 
 void draw()
@@ -453,10 +446,25 @@ void mouseFunction(int button, int state, int x, int y){
 			TextArea& ta = textArea[i];
 			if(x >= ta.x && x < ta.x + ta.width() && y >= ta.y && y < ta.y + ta.height()){
 				activeObject = &ta;
+				within = !within;
+				xDistance = x - ta.x;
+				yDistance = y - ta.y;
 				break;
 			}
-		}
+		}		
 	}
+}
+void mouseMovement(int x, int y){
+	
+	//printf("x = %i : y = %i \n", x, y);
+	TextArea& ta = *activeObject;
+	if (within){
+		ta.x = x-xDistance;
+		ta.y = y-yDistance;
+	}
+
+	need_update();
+	printf("active object x = %f : y = %f \n", ta.x, ta.y);
 }
 
 
