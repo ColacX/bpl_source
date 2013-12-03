@@ -39,8 +39,8 @@ static union
 	long l[t_size/sizeof(long)];
 } t;
 
-int window_width = 1800;
-int window_height = 1024;
+int window_width;// = 800;
+int window_height;// = 600;
 GLuint shader_program_text;
 
 //custom header files------------------------------------------------------------
@@ -55,5 +55,7 @@ GLuint shader_program_text;
 
 void main(int argc, char** argv)
 {
+	window_width = GetSystemMetrics(SM_CXSCREEN) - 100;
+	window_height = GetSystemMetrics(SM_CYSCREEN) - 100;
 	program_construct(argc, argv);
 }

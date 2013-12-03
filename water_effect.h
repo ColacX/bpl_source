@@ -9,8 +9,6 @@ namespace water_effect
 	GLuint water_effect_update, water_effect_rendering, water_effect_mouse;
 	GLuint water_effect_frame_buffer;
 	GLuint background_texture;
-	int water_width = window_width;
-	int water_height = window_height;
 	bool ping_pong = false;
 
 	GLuint construct_color_texture()
@@ -31,8 +29,8 @@ namespace water_effect
 			GL_TEXTURE_2D, //target
 			0, //mipmap-level
 			GL_R32F, //texture format
-			water_width, //texture width
-			water_height, //texture height
+			window_width, //texture width
+			window_height, //texture height
 			0, //this value must be 0? lol.
 			GL_RED, //input data format
 			GL_FLOAT, //input data element type
@@ -137,8 +135,8 @@ namespace water_effect
 		else
 			glDrawBuffer(GL_COLOR_ATTACHMENT1);
 
-		float s = (float)mx/(float)water_width*2.0f - 1.0f;
-		float t = (float)my/(float)water_height*2.0f - 1.0f;
+		float s = (float)mx/(float)window_width*2.0f - 1.0f;
+		float t = (float)my/(float)window_height*2.0f - 1.0f;
 
 		glBegin(GL_POINTS);
 		glVertexAttrib4f(1, 1, 0, 0, 1);

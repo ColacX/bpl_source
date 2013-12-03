@@ -45,8 +45,6 @@ SDL_Color cyan  = {0x00, 0xff, 0xff, 0x00};
 SDL_Color black = { 0x00, 0x00, 0x00, 0x00 };
 
 // Todo - explain these.
-int text_width = window_width;
-int text_height = window_height;
 GLuint text_buffer_texture;
 GLuint text_frame_buffer;
 GLuint block_type_shader;
@@ -98,9 +96,9 @@ void TextLine::draw(float x, float y, size_t i, size_t max, const SDL_Color& col
 		tab = startingSpacesCount[i];
 
 	if (c.b != 0xff){ //main box
-		// Draw the black edge around the colored rectangles which are behind the text
+		// Draw the gray edge around the colored rectangles which are behind the text
 		glBegin(GL_TRIANGLE_STRIP);
-		glColor3f(0.0f, 0.0f, 0.0f);
+		glColor3f(0.5f, 0.5f, 0.5f);
 		//texcoord; position;
 		glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1 + ((x+font_char_width*tab) / width),		+1 - ((y) / height)); //top left check
 		glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, -1 + ((x + currentBlockWidth) / width),		+1 - ((y) / height)); //top right check
@@ -270,7 +268,8 @@ void construct(){
 
 	// Uniforms block.
 	textArea[1].strings.push_back(TextLine("$Uniforms"));
-	textArea[1].strings.push_back(TextLine("Texture tex0 = \"Grass.bmp\""));
+	textArea[1].strings.push_back(TextLine("Texture tex0 = \"Rock.bmp\""));
+	textArea[1].strings.push_back(TextLine("//Texture tex0 = \"Grass.bmp\""));
 	textArea[1].x = 0;
 	textArea[1].y = 500;
 	textArea[1].c = 1;
@@ -330,8 +329,8 @@ void construct(){
 			GL_TEXTURE_2D, //target
 			0, //mipmap-level
 			GL_RGBA, //texture format
-			text_width, //texture width
-			text_height, //texture height
+			window_width, //texture width
+			window_height, //texture height
 			0, //this value must be 0? lol.
 			GL_RED, //input data format
 			GL_FLOAT, //input data element type
@@ -747,8 +746,9 @@ void compile(){
 
 				fwrite(temp, 1, n+3, maindst);
 			}
-			else
-				__debugbreak();
+			else{
+				//__debugbreak();
+			}
 		}
 		
 		// Create the function for loading all the textures.
@@ -796,8 +796,9 @@ void compile(){
 				fwrite(temp, 1, n, maindst);
 				texId++;
 			}
-			else
-				__debugbreak();
+			else{
+				//__debugbreak();
+			}
 		}
 
 		// Add ending brace.
