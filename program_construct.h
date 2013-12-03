@@ -39,6 +39,7 @@ void program_construct(int argc, char** argv)
 		text_area::construct();
 		particle_system::construct();
 		blockTypes::construct();
+		color_selector::construct();
 	}
 
 	//special settings
