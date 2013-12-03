@@ -4,6 +4,7 @@
 #include <gl\glew.h>
 #include <gl\glut.h>
 #include <gl\gl.h>
+#include <time.h>
 
 #define GLUT_KEY_BACKSPACE  8
 #define GLUT_KEY_ENTER     13
@@ -21,12 +22,20 @@ extern GLuint CreateShaderProgram(const char* vert_source = 0, const char* frag_
 extern int window_width;
 extern int window_height;
 
+bool within = false; //without this the blocks will jump if you press in empty space
+int xDistance = 0;
+int yDistance = 0;
+float currentBlockWidth; //so that the smaller blocks get the correct width
+float currentBlockHeight;
+float currentBlockTopY;
+
 namespace blockTypes{
 	
 SDL_Color red   = {0xff, 0x00, 0x00, 0x00};
 SDL_Color green = {0x00, 0xff, 0x00, 0x00};
 SDL_Color blue  = {0x00, 0x00, 0xff, 0x00};
 SDL_Color cyan  = {0x00, 0xff, 0xff, 0x00};
+SDL_Color black = { 0x00, 0x00, 0x00, 0x00 };
 
 
 int text_width = window_width;
@@ -51,19 +60,49 @@ TextLine::TextLine(char c){
 	str.push_back(c);
 }
 
+
+SDL_Color lastLine = blue;
+int tab;
+
 void TextLine::draw(float x, float y, const SDL_Color& color){
 	//bolls_draw_text(str, x,y, color);
 
 	SDL_Color c = green;
-
+	float width = window_width / 2;
+	float height = window_height / 2;
+	
 	if( str.find(" if(") != std::string::npos || str.find(" else") != std::string::npos || str.find(" while(") != std::string::npos || str.find(" for(") != std::string::npos )
 		c = red;
 	else if( str.size()==1 && str[0]=='|' ) // if cursor
 		c = cyan;
-	else if(str.size() && str[0]!=' ') // if no spaces
+	else if (str.size() && str[0] != ' ') // if no spaces
 		c = blue;
+	else if (str.size() == 0)
+		c = lastLine;
 
 	char t[128];
+	if (str.size()){
+		tab = 0;
+		for (int i = 0; i < str.size(); ++i){
+			if (str[i] != ' ') break;
+			tab++;
+		}
+	}
+	if (c.b != 0xff){ //main box
+		glBegin(GL_TRIANGLE_STRIP);
+		if (c.r == 0xff) glColor3f(1.0f, 0.0f, 0.0f);
+		else if (c.g == 0xff) glColor3f(0.0f, 1.0f, 0.0f);
+		//texcoord; position;
+		glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1 + ((x+font_char_width*tab) / width), +1 - (y / height)); //top left check
+		glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, -1 + ((x + currentBlockWidth) / width), +1 - (y / height)); //top right check
+		glVertexAttrib2f(1, 0, 1); glVertexAttrib2f(0, -1 + ((x + font_char_width*tab) / width), +1 - ((y+font_char_height) / height)); //bottom left check
+		glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, -1 + ((x + currentBlockWidth) / width), +1 - ((y+font_char_height) / height)); //bottom right
+		glEnd();
+	}
+
+	lastLine = c;
+
+	c = black;
 	for(size_t i=0; i<str.size(); ++i){
 		// Interpret the text, find out if there are any keywords etc, and set the correct color
 		t[0] = str[i];
@@ -74,6 +113,8 @@ void TextLine::draw(float x, float y, const SDL_Color& color){
 		}
 	}
 }
+
+
 void TextLine::saveAsText(std::string& str){
 	str.append(this->str);
 }
@@ -133,9 +174,12 @@ void check_update()
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for (size_t i = 0; i<textArea.size(); ++i)
+	for (size_t i = 0; i < textArea.size(); ++i){
+		currentBlockWidth = textArea[i].width();
+		currentBlockHeight = textArea[i].height();
+		currentBlockTopY = textArea[i].y;
 		textArea[i].draw();
-
+	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -246,14 +290,10 @@ void construct(){
 	need_update();
 }
 
-
+//draws the blue block behind everything
 void draw_block_graphic(){
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER);
-	/*
-	printf("textarea.x %f /n", textArea[0].x);
-	printf("textarea.y %f /n", textArea[0].y);
-	*/
 
 	float currentScroll = 0;
 	float wingroom = 0.005f; //some extra space for the block
@@ -265,6 +305,7 @@ void draw_block_graphic(){
 		currentScroll = textArea[i].r * font_char_height / height;
 
 		glBegin(GL_TRIANGLE_STRIP);
+		glColor3f(0.0f, 0.0f, 1.0f);
 		//texcoord; position;
 		glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1 + (textArea[i].x / width) - wingroom, +1 - (textArea[i].y / height) + currentScroll + wingroom); //top left check
 		glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, -1 + (textArea[i].x / width) + (textArea[i].width() / width) + wingroom, +1 - (textArea[i].y / height) + currentScroll + wingroom); //top right check
@@ -272,20 +313,8 @@ void draw_block_graphic(){
 		glVertexAttrib2f(1, 1, 1); glVertexAttrib2f(0, -1 + (textArea[i].x / width) + (textArea[i].width() / width) + wingroom, +1 - (textArea[i].y / height) - (textArea[i].height() / height) + currentScroll - wingroom); //bottom right
 		glEnd();
 	}
-	//printf("textarea height %f /n", textArea[0].height());
-	//printf("textarea width %f /n", textArea[0].width());
-	//printf("textarea lines %i" ,textArea[0].strings.size());
-}
-/*
-void draw(){
 
-	// draw the block behind the text
-	draw_block_graphic();
-
-	for (size_t i = 0; i < textArea.size(); ++i)
-		textArea[i].draw();
 }
-*/
 
 
 void draw()
@@ -453,10 +482,22 @@ void mouseFunction(int button, int state, int x, int y){
 			TextArea& ta = textArea[i];
 			if(x >= ta.x && x < ta.x + ta.width() && y >= ta.y && y < ta.y + ta.height()){
 				activeObject = &ta;
+				within = !within;
+				xDistance = x - ta.x;
+				yDistance = y - ta.y;
 				break;
 			}
-		}
+		}		
 	}
+}
+void mouseMovement(int x, int y){
+
+	TextArea& ta = *activeObject;
+	if (within){
+		ta.x = x-xDistance;
+		ta.y = y-yDistance;
+	}
+	need_update();
 }
 
 

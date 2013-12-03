@@ -31,6 +31,7 @@ void mouse_function(int button, int state, int x, int y)
 
 void mouse_motion_function(int x, int y)
 {
+	blockTypes::mouseMovement(x, y);
 }
 
 void idle_function()
