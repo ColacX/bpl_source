@@ -625,7 +625,7 @@ void compile(){
 		}
 		fwrite("}\r\n", 1, 3, maindst);
 		fclose(maindst);
-		system(R"(bpl_source\compile_executable.bat)");
+		system("bpl_source\\compile_executable.bat");
 		//system(R"(del /S /F /Q Blocks\*.exe > NUL)");
 		//system(R"(type bpl_binary\CodeLibrary\RaytracerEngine_main.cpp >> Blocks\main.cpp)");
 		//system(R"(C:\cygwin64\bin\gcc -Os -s -o Blocks/test.exe Blocks/*.cpp -lopengl32 -lglu32 -lgdi32)");
