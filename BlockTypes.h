@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <SDL.h>
 #include <SDL_pixels.h>
+#include <glm\glm.hpp>
 
 namespace blockTypes{
 	
@@ -12,6 +13,14 @@ extern SDL_Color red;
 extern SDL_Color green;
 extern SDL_Color blue;
 extern SDL_Color cyan;
+
+extern glm::vec3 color1;
+extern glm::vec3 color2;
+extern glm::vec3 color3;
+extern glm::vec3 color4;
+extern glm::vec3 color5;
+
+extern void need_update();
 
 // Forward declarations of draw and construct (these are used in program_run.h and program_construct.h).
 void draw();

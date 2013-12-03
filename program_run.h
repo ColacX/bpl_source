@@ -9,6 +9,7 @@ void program_run()
 		water_effect::draw();
 		//text_area::draw();
 		blockTypes::draw();
+		color_selector::draw();
 		particle_system::update();
 		particle_system::draw();
 		glutSwapBuffers();

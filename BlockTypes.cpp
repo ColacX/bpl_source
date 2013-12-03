@@ -6,6 +6,7 @@
 #include <gl\gl.h>
 #include <time.h>
 
+
 // Add some of the glut keys which do not exist in glut.h.
 #define GLUT_KEY_BACKSPACE  8
 #define GLUT_KEY_ENTER     13
@@ -43,6 +44,12 @@ SDL_Color green = {0x00, 0xff, 0x00, 0x00};
 SDL_Color blue  = {0x00, 0x00, 0xff, 0x00};
 SDL_Color cyan  = {0x00, 0xff, 0xff, 0x00};
 SDL_Color black = { 0x00, 0x00, 0x00, 0x00 };
+
+glm::vec3 color1(1.0, 0, 0);
+glm::vec3 color2(0, 1.0, 0);
+glm::vec3 color3(0, 0, 1.0);
+glm::vec3 color4(1.0, 0, 1.0);
+glm::vec3 color5(0, 0, 0);
 
 // Todo - explain these.
 int text_width = window_width;
@@ -100,7 +107,7 @@ void TextLine::draw(float x, float y, size_t i, size_t max, const SDL_Color& col
 	if (c.b != 0xff){ //main box
 		// Draw the black edge around the colored rectangles which are behind the text
 		glBegin(GL_TRIANGLE_STRIP);
-		glColor3f(0.0f, 0.0f, 0.0f);
+		glColor3f(color5.x, color5.y, color5.z);
 		//texcoord; position;
 		glVertexAttrib2f(1, 0, 0); glVertexAttrib2f(0, -1 + ((x+font_char_width*tab) / width),		+1 - ((y) / height)); //top left check
 		glVertexAttrib2f(1, 1, 0); glVertexAttrib2f(0, -1 + ((x + currentBlockWidth) / width),		+1 - ((y) / height)); //top right check
@@ -111,9 +118,9 @@ void TextLine::draw(float x, float y, size_t i, size_t max, const SDL_Color& col
 		// Draw the colored rectangle behind the text
 		glBegin(GL_TRIANGLE_STRIP);
 		if (c.r == 0xff)
-			glColor3f(1.0f, 0.5f, 0.5f);
+			glColor3f(color1.x, color1.y, color1.z);
 		else if (c.g == 0xff)
-			glColor3f(0.5f, 1.0f, 0.5f);
+			glColor3f(color2.x, color2.y, color2.z);
 		
 		// Some lines should have a black border at the top and the bottom, and some shouldn't.
 		// This depends mostly on if the tabs in the above and the below lines are different or equal to the tabs on this line.

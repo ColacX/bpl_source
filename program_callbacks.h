@@ -25,6 +25,7 @@ void keyboard_special_function(int key, int x, int y)
 void mouse_function(int button, int state, int x, int y)
 {
 	water_effect::mouse_interaction(x, y);
+	color_selector::mouseInteraction(x, y);
 	particle_system::addSource(x, y);
 	blockTypes::mouseFunction(button, state, x, y);
 }
